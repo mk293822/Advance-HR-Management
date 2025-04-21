@@ -114,14 +114,17 @@ const index = ({
                             <th className="px-2 lg:px-4 py-3 text-left">
                                 Name
                             </th>
-                            <th className="px-2 lg:px-4 py-3 text-left">
+                            <th className="px-2 lg:px-4 hidden 2xl:table-cell py-3 text-left">
                                 Role
                             </th>
                             <th className="px-2 lg:px-4 py-3 text-left">
                                 Department
                             </th>
-                            <th className="px-2 lg:px-4 py-3 text-left">
+                            <th className="px-2 lg:px-4 py-3 hidden xl:table-cell text-left">
                                 Position
+                            </th>
+                            <th className="px-2 hidden md:table-cell lg:px-4 py-3 text-left">
+                                Id
                             </th>
                             <th className="px-2 lg:px-4 py-3 text-left hidden sm:table-cell">
                                 Status
@@ -141,14 +144,21 @@ const index = ({
                                 <td className="px-2 lg:px-4 py-3 capitalize">
                                     {employee.first_name} {employee.last_name}
                                 </td>
-                                <td className="px-2 lg:px-4 py-3 capitalize">
-                                    {employee.role.name}
+                                <td className="px-2 lg:px-4 hidden 2xl:table-cell py-3 capitalize">
+                                    {employee.role.name
+                                        .replace(/_/g, " ")
+                                        .replace(/\b\w/g, (l) =>
+                                            l.toUpperCase()
+                                        )}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3 capitalize">
                                     {employee.department.name}
                                 </td>
-                                <td className="px-2 lg:px-4 py-3">
+                                <td className="px-2 lg:px-4 hidden xl:table-cell py-3">
                                     {employee.position.name}
+                                </td>
+                                <td className="px-2 hidden md:table-cell lg:px-4 py-3">
+                                    {employee.employee_id}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3 hidden sm:table-cell">
                                     <span
