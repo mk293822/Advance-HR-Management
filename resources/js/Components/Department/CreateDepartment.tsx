@@ -20,6 +20,7 @@ interface Props {
         employee_id: string;
         full_name: string;
     }>;
+    header_ids: string[];
 }
 
 export default function CreateDepartment({
@@ -29,6 +30,7 @@ export default function CreateDepartment({
     isEdit,
     editData,
     users,
+    header_ids,
 }: Props) {
     const initialForm: Department = {
         name: "",
@@ -248,46 +250,50 @@ export default function CreateDepartment({
                         Select Participants
                     </h3>
                     <div className="max-h-64 overflow-y-auto space-y-2">
-                        {users.map(
-                            (user) =>
-                                user.employee_id !== form?.header_id && (
-                                    <div
-                                        key={user.employee_id}
-                                        className="flex items-center space-x-2"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={form.participants.some(
-                                                (participant) =>
-                                                    participant.employee_id ===
-                                                    user.employee_id
-                                            )}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setForm({
-                                                        ...form,
-                                                        participants: [
-                                                            ...form.participants,
-                                                            user,
-                                                        ],
-                                                    });
-                                                } else {
-                                                    setForm({
-                                                        ...form,
-                                                        participants:
-                                                            form.participants.filter(
-                                                                (participant) =>
-                                                                    participant.employee_id !==
-                                                                    user.employee_id
-                                                            ),
-                                                    });
-                                                }
-                                            }}
-                                        />
-                                        <span>{user.full_name}</span>
-                                    </div>
-                                )
-                        )}
+                        {users
+                            .filter(
+                                (user) =>
+                                    !header_ids.some(
+                                        (h) => h === user.employee_id
+                                    )
+                            )
+                            .map((user) => (
+                                <div
+                                    key={user.employee_id}
+                                    className="flex items-center space-x-2"
+                                >
+                                    <input
+                                        type="checkbox"
+                                        checked={form.participants.some(
+                                            (participant) =>
+                                                participant.employee_id ===
+                                                user.employee_id
+                                        )}
+                                        onChange={(e) => {
+                                            if (e.target.checked) {
+                                                setForm({
+                                                    ...form,
+                                                    participants: [
+                                                        ...form.participants,
+                                                        user,
+                                                    ],
+                                                });
+                                            } else {
+                                                setForm({
+                                                    ...form,
+                                                    participants:
+                                                        form.participants.filter(
+                                                            (participant) =>
+                                                                participant.employee_id !==
+                                                                user.employee_id
+                                                        ),
+                                                });
+                                            }
+                                        }}
+                                    />
+                                    <span>{user.full_name}</span>
+                                </div>
+                            ))}
                     </div>
                     <div className="flex justify-end mt-4">
                         <button

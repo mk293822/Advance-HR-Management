@@ -33,6 +33,7 @@ export type DepartmentProps = {
         employee_id: string;
         full_name: string;
     }>;
+    header_ids: string[];
 };
 
 export type Department = {

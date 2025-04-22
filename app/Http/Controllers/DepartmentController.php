@@ -18,6 +18,7 @@ class DepartmentController extends Controller
     public function index(Request $request)
     {
         $departments = DepartmentResource::collection(Department::all())->toArray($request);
+        $header_ids = Department::all()->pluck('header_id')->toArray();
 
         $users = User::all()->map(fn($user) => [
             'full_name' => $user->first_name . ' ' . $user->last_name,
@@ -27,6 +28,7 @@ class DepartmentController extends Controller
         return Inertia::render("Admin/Department", [
             'departments' => $departments,
             'users' => $users,
+            'header_ids' => $header_ids
         ]);
     }
 
@@ -45,6 +47,19 @@ class DepartmentController extends Controller
             'participants.*.full_name' => 'string'
         ]);
 
+        // Checking participants and header are already in a department
+        $header_ids = Department::all()->pluck('header_id')->toArray();
+
+        if (in_array($validatedData['header_id'], $header_ids)) {
+            $validatedData['header_id'] = null;
+        }
+        $conflictingParticipants = collect($validatedData['participants'])
+            ->filter(fn($p) => in_array($p['employee_id'], $header_ids));
+
+        if ($conflictingParticipants->isNotEmpty()) {
+            $validatedData['header_id'] = null;
+        }
+
         $department = Department::create($validatedData);
 
         collect($validatedData['participants'])->map(function ($participant) use ($department) {
@@ -55,7 +70,7 @@ class DepartmentController extends Controller
 
         return response()->json([
             'satus' => 'success',
-            'data' => DepartmentResource::collection(Department::all())->toArray($request)
+            'data' => (new DepartmentResource($department))->toArray($request)
         ], 201);
     }
 

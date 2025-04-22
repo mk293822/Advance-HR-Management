@@ -10,6 +10,7 @@ import { useState } from "react";
 export default function DepartmentsPage({
     departments,
     users,
+    header_ids,
 }: DepartmentProps) {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [selectedDepartment, setSelectedDepartment] =
@@ -203,6 +204,7 @@ export default function DepartmentsPage({
                 isEdit={isEdit}
                 editData={selectedDepartment}
                 users={users}
+                header_ids={header_ids}
             />
         </AdminLayout>
     );
