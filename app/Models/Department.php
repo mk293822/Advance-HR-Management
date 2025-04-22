@@ -13,7 +13,7 @@ class Department extends Model
     protected $fillable = [
         'name',
         'description',
-        'head',
+        'header_id',
         'status'
     ];
 

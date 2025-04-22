@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('address')->nullable();
 
             $table->string('employee_id')->unique(); // E.g., EMP-001
-            $table->foreignId('department_id')->constrained('departments')->onDelete('cascade');
+            $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('cascade');
             $table->foreignId('position_id')->constrained('positions')->onDelete('cascade');
             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete(); // Employee / Manager / Admin
             $table->date('date_hired')->default(now());

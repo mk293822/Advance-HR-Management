@@ -16,9 +16,8 @@ return new class extends Migration
             $table->id();
             $table->string('name')->unique();
             $table->string('description')->nullable();
-            $table->string('head')->nullable(); // Department head
+            $table->string('header_id')->nullable();
             $table->enum('status', array_map(fn($status) => $status->value, UserStatusEnum::cases()))->default(UserStatusEnum::Pending->value); // Active, Resigned, Terminated
-
             $table->timestamps();
         });
     }

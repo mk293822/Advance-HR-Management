@@ -1,5 +1,7 @@
 // Dashboard types for the admin dashboard
 
+import { Status } from "./Enums";
+
 export type DashboardProps = {
     employee_count: number;
     department_count: number;
@@ -27,17 +29,25 @@ export type UpcomingEvent = {
 
 export type DepartmentProps = {
     departments: Department[];
+    users: Array<{
+        employee_id: string;
+        full_name: string;
+    }>;
 };
 
 export type Department = {
-    id: number;
+    id?: number;
     name: string;
     description: string | null;
-    head: string;
-    employees_count: number;
-    status: "Active" | "Inactive" | "Suspended" | "Pending"; // Use string literal union if status is fixed
-    created_at: string;
-    updated_at: string;
+    header_id: string | null;
+    employees_count?: number;
+    status: Status | string; // Use string literal union if status is fixed
+    created_at?: string;
+    updated_at?: string;
+    participants: Array<{
+        full_name: string;
+        employee_id: string;
+    }>;
 };
 
 // Role types for the admin dashboard
@@ -70,7 +80,7 @@ export type Employee = {
     phone: string | null;
     gender: string | null;
     employee_id: string;
-    department: Department; // Nested Department type
+    department: Department | null; // Nested Department type
     position: PositionProps; // Nested Position type
     role: RoleProps; // Nested Role type
     status: "Active" | "Inactive" | "Suspended" | "Pending";

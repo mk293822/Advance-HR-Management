@@ -1,4 +1,4 @@
-import { Department } from "@/types/Admin";
+import { Department, Employee } from "@/types/Admin";
 import React from "react";
 import ActionButton from "../ActionButton";
 import { Detail } from "../TextDetail&Info";
@@ -8,9 +8,24 @@ type Props = {
     show: boolean;
     onClose: () => void;
     department: Department | null;
+    onDelete: () => void;
+    onEdit: () => void;
+    header:
+        | {
+              full_name: string;
+              employee_id: string;
+          }
+        | undefined;
 };
 
-const DepartmentModal: React.FC<Props> = ({ show, onClose, department }) => {
+const DepartmentModal: React.FC<Props> = ({
+    show,
+    onClose,
+    department,
+    onDelete,
+    onEdit,
+    header,
+}) => {
     if (!show || !department) return null;
 
     return (
@@ -21,10 +36,13 @@ const DepartmentModal: React.FC<Props> = ({ show, onClose, department }) => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
                 <Detail label="Name" value={department.name} />
-                <Detail label="Head" value={department.head} />
+                <Detail
+                    label="Header"
+                    value={header?.full_name || "No Header"}
+                />
                 <Detail
                     label="Employees Count"
-                    value={department.employees_count}
+                    value={department.employees_count ?? "N/A"}
                 />
                 <div>
                     <span className="block text-gray-400 mb-1">Status</span>
@@ -54,7 +72,13 @@ const DepartmentModal: React.FC<Props> = ({ show, onClose, department }) => {
                 </div>
             </div>
 
-            <div className="mt-6 text-right">
+            <div className="mt-6 flex items-center justify-end gap-2">
+                <ActionButton onClick={onDelete} color="red">
+                    Delete
+                </ActionButton>
+                <ActionButton onClick={onEdit} color="yellow">
+                    Edit
+                </ActionButton>
                 <ActionButton onClick={onClose} color="green">
                     Close
                 </ActionButton>

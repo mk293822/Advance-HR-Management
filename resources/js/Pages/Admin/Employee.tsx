@@ -152,7 +152,8 @@ const index = ({
                                         )}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3 capitalize">
-                                    {employee.department.name}
+                                    {employee.department?.name ||
+                                        "No department"}
                                 </td>
                                 <td className="px-2 lg:px-4 hidden xl:table-cell py-3">
                                     {employee.position.name}

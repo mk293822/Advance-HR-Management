@@ -1,84 +1,304 @@
-import React, { useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import Modal from "../Modal";
+import { Department } from "@/types/Admin";
+import { Status } from "@/types/Enums";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxOption,
+    ComboboxOptions,
+} from "@headlessui/react";
+import Fuse from "fuse.js";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
+    onCreate: (data: Department) => void;
+    isEdit: boolean;
+    editData: Department | null;
+    users: Array<{
+        employee_id: string;
+        full_name: string;
+    }>;
 }
 
-export default function CreateDepartment({ isOpen, onClose }: Props) {
-    const [name, setName] = useState("");
-    const [head, setHead] = useState("");
-    const [description, setDescription] = useState("");
+export default function CreateDepartment({
+    isOpen,
+    onClose,
+    onCreate,
+    isEdit,
+    editData,
+    users,
+}: Props) {
+    const initialForm: Department = {
+        name: "",
+        header_id: "",
+        description: "",
+        status: "",
+        participants: [],
+    };
 
-    if (!isOpen) return null;
+    const [form, setForm] = useState<Department>(initialForm);
+    const [showParticipantModal, setShowParticipantModal] = useState(false);
+
+    const [query, setQuery] = useState("");
+    const fuse = new Fuse(users, {
+        keys: ["full_name"],
+        threshold: 0.5,
+    });
+    const [selectedHead, setSelectedHead] = useState<string | null>(
+        form.header_id
+    );
+
+    // Head Selecting and searching
+    useEffect(() => {
+        if (isEdit && editData) {
+            setForm(editData);
+            setSelectedHead(editData.header_id);
+        }
+    }, [isEdit, editData]);
+
+    const filteredUsers =
+        query === "" ? users : fuse.search(query).map((result) => result.item);
+
+    // For Editing
+    useEffect(() => {
+        if (isEdit && editData) {
+            setForm(editData);
+            setSelectedHead(editData.header_id);
+        } else {
+            setForm(initialForm);
+        }
+    }, [isEdit, editData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setName("");
-        setHead("");
-        setDescription("");
+        onCreate(form);
+        setForm(initialForm);
+        onClose();
     };
 
     const Close = () => {
-        setName("");
-        setHead("");
-        setDescription("");
+        setForm(initialForm);
+        setSelectedHead("");
         onClose();
     };
 
     return (
-        <Modal onClose={onClose} show={isOpen}>
-            <h2 className="text-xl font-semibold mb-4">Create New Event</h2>
+        <>
+            <Modal onClose={onClose} show={isOpen}>
+                <h2 className="text-xl font-semibold mb-4">
+                    {isEdit ? "Update Department" : "Create New Department"}
+                </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="block text-sm mb-1">Name</label>
-                    <input
-                        type="text"
-                        className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm mb-1">Head</label>
-                    <input
-                        type="text"
-                        className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        value={head}
-                        onChange={(e) => setHead(e.target.value)}
-                        required
-                    />
-                </div>
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-2 sm:space-y-4"
+                >
+                    <div>
+                        <label className="block text-sm mb-1">Name</label>
+                        <input
+                            type="text"
+                            className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={form.name}
+                            onChange={(e) =>
+                                setForm({ ...form, name: e.target.value })
+                            }
+                            required
+                        />
+                    </div>
 
-                <div>
-                    <label className="block text-sm mb-1">Description</label>
-                    <textarea
-                        className="w-full px-4 py-2 rounded bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        rows={4}
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                    ></textarea>
-                </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm mb-1">Head</label>
+                            <Combobox
+                                value={selectedHead}
+                                onChange={(value) => {
+                                    setSelectedHead(value);
+                                    setForm({
+                                        ...form,
+                                        header_id: value || "",
+                                    });
+                                }}
+                            >
+                                <div className="relative">
+                                    <ComboboxInput
+                                        className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        onChange={(event) =>
+                                            setQuery(event.target.value)
+                                        }
+                                        displayValue={(value: string) =>
+                                            users.find(
+                                                (u) => u.employee_id === value
+                                            )?.full_name || ""
+                                        }
+                                        placeholder="Search user..."
+                                    />
+                                    <ComboboxOptions className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-600 rounded max-h-60 overflow-auto shadow-lg">
+                                        {filteredUsers.length === 0 ? (
+                                            <div className="px-4 py-2 text-sm text-gray-400">
+                                                No users found.
+                                            </div>
+                                        ) : (
+                                            filteredUsers.map((user) => (
+                                                <ComboboxOption
+                                                    key={user.employee_id}
+                                                    value={user.employee_id}
+                                                    as={Fragment}
+                                                >
+                                                    {({ active, selected }) => (
+                                                        <li
+                                                            className={`cursor-pointer px-4 py-2 ${
+                                                                active
+                                                                    ? "bg-blue-600 text-white"
+                                                                    : "text-gray-300"
+                                                            }`}
+                                                        >
+                                                            {user.full_name}
+                                                        </li>
+                                                    )}
+                                                </ComboboxOption>
+                                            ))
+                                        )}
+                                    </ComboboxOptions>
+                                </div>
+                            </Combobox>
+                        </div>
 
-                <div className="flex justify-end space-x-3">
-                    <button
-                        type="button"
-                        onClick={Close}
-                        className="px-4 py-2 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded"
-                    >
-                        Create
-                    </button>
-                </div>
-            </form>
-        </Modal>
+                        <div>
+                            <label className="block text-sm mb-1">Status</label>
+                            <select
+                                className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value={form.status}
+                                onChange={(e) =>
+                                    setForm({
+                                        ...form,
+                                        status: e.target.value as Status,
+                                    })
+                                }
+                                required
+                            >
+                                <option value="">Select Status</option>
+                                {Object.values(Status).map((status) => (
+                                    <option key={status} value={status}>
+                                        {status}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm mb-1">
+                            Participants
+                        </label>
+                        <button
+                            type="button"
+                            onClick={() => setShowParticipantModal(true)}
+                            className="w-full text-left px-4 py-2 rounded bg-gray-700 border border-gray-600 hover:bg-gray-600"
+                        >
+                            {form.participants.length > 0
+                                ? `${form.participants.length} selected`
+                                : "Select Participants"}
+                        </button>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm mb-1">
+                            Description
+                        </label>
+                        <textarea
+                            rows={4}
+                            className="w-full px-4 py-2 rounded bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={form.description || ""}
+                            onChange={(e) =>
+                                setForm({
+                                    ...form,
+                                    description: e.target.value,
+                                })
+                            }
+                        ></textarea>
+                    </div>
+
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            onClick={Close}
+                            className="px-4 py-2 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded"
+                        >
+                            {isEdit ? "Update" : "Create"}
+                        </button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Popup Modal */}
+            {showParticipantModal && (
+                <Modal
+                    show={showParticipantModal}
+                    onClose={() => setShowParticipantModal(false)}
+                >
+                    <h3 className="text-lg font-semibold mb-4">
+                        Select Participants
+                    </h3>
+                    <div className="max-h-64 overflow-y-auto space-y-2">
+                        {users.map(
+                            (user) =>
+                                user.employee_id !== form?.header_id && (
+                                    <div
+                                        key={user.employee_id}
+                                        className="flex items-center space-x-2"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={form.participants.some(
+                                                (participant) =>
+                                                    participant.employee_id ===
+                                                    user.employee_id
+                                            )}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setForm({
+                                                        ...form,
+                                                        participants: [
+                                                            ...form.participants,
+                                                            user,
+                                                        ],
+                                                    });
+                                                } else {
+                                                    setForm({
+                                                        ...form,
+                                                        participants:
+                                                            form.participants.filter(
+                                                                (participant) =>
+                                                                    participant.employee_id !==
+                                                                    user.employee_id
+                                                            ),
+                                                    });
+                                                }
+                                            }}
+                                        />
+                                        <span>{user.full_name}</span>
+                                    </div>
+                                )
+                        )}
+                    </div>
+                    <div className="flex justify-end mt-4">
+                        <button
+                            onClick={() => setShowParticipantModal(false)}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                            Done
+                        </button>
+                    </div>
+                </Modal>
+            )}
+        </>
     );
 }

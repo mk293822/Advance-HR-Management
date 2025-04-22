@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\UserStatusEnum;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,7 +22,6 @@ class DepartmentFactory extends Factory
 
         return [
             'description' => $this->faker->sentence,
-            'head' => $this->faker->name,
             'status' => $this->faker->randomElement(UserStatusEnum::cases())->value,
         ];
     }

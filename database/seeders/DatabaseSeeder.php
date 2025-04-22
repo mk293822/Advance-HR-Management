@@ -38,9 +38,11 @@ class DatabaseSeeder extends Seeder
             'Research and Development',
         ];
 
-        Department::factory()
+        $departments = Department::factory()
             ->count(count($departmentNames))
-            ->sequence(fn($sequence) => ['name' => $departmentNames[$sequence->index]])
+            ->sequence(fn($sequence) => [
+                'name' => $departmentNames[$sequence->index],
+            ])
             ->create();
 
         $positions = [
@@ -78,6 +80,17 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $user = User::factory(50)->create();
+
+        $employee_ids = User::inRandomOrder()
+            ->limit(count($departmentNames))
+            ->pluck('employee_id')
+            ->toArray();
+
+        $departments->each(function ($dep, $index) use ($employee_ids) {
+            $dep->update([
+                'header_id' => $employee_ids[$index],
+            ]);
+        });
 
         UpcomingEvents::factory(20)->create();
 

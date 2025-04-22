@@ -24,7 +24,7 @@ class UserResource extends JsonResource
             'phone' => $this->phone,
             'gender' => $this->gender,
             'employee_id' => $this->employee_id,
-            'department' => (new DepartmentResource($this->department))->toArray($request), // Assuming a relationship with Department
+            'department' => $this->department_id ? (new DepartmentResource($this->department))->toArray($request) : null,
             'position' => $this->position->toArray(fn($position) => [
                 'id' => $position->id,
                 'name' => $position->name,

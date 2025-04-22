@@ -7,7 +7,7 @@ import { Department, Employee, PositionProps, RoleProps } from "@/types/Admin";
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (data: any) => void;
+    onCreate: (data: Employee) => void;
     editData?: Employee | null;
     isEdit?: boolean;
     departments?: Department[];
@@ -45,8 +45,6 @@ export default function CreateEmployee({
 
     const [formData, setFormData] = useState(initialForm);
 
-    console.log(editData);
-
     useEffect(() => {
         if (isEdit && editData) {
             setFormData({
@@ -59,7 +57,7 @@ export default function CreateEmployee({
                 gender: editData.gender || "",
                 date_of_birth: editData.date_of_birth || "",
                 address: editData.address?.replace(/\\n/g, "\n") || "",
-                department: editData.department.id.toString() || "",
+                department: editData?.department?.id?.toString() ?? "",
                 position: editData.position.id.toString() || "",
                 role: editData.role.id.toString() || "",
                 date_hired: editData.date_hired || "",

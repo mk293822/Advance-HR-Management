@@ -4,18 +4,96 @@ import DepartmentModal from "@/Components/Department/DepartmentModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Department, DepartmentProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
+import axios from "axios";
 import { useState } from "react";
 
-export default function DepartmentsPage({ departments }: DepartmentProps) {
+export default function DepartmentsPage({
+    departments,
+    users,
+}: DepartmentProps) {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [selectedDepartment, setSelectedDepartment] =
         useState<Department | null>(null);
     const [showCreateDepartmentModal, setShowCreateDepartmentModal] =
         useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+    const [localDepartments, setLocalDepartments] =
+        useState<Department[]>(departments);
 
+    // Handle Department Detail Modal
     const handleDepartmentClick = (department: Department) => {
         setSelectedDepartment(department);
         setShowModal(true);
+    };
+
+    // Handle Department Create and Edit
+    const handleDepartmentCreate = (data: Department) => {
+        const request = isEdit
+            ? axios.put(
+                  route("departments.update", selectedDepartment?.id),
+                  data
+              )
+            : axios.post(route("departments.store"), data);
+
+        request
+            .then((res) => {
+                setSelectedDepartment(null);
+                if (res.data.status === "success") {
+                    setLocalDepartments((prev) => {
+                        let updated;
+                        if (isEdit && selectedDepartment) {
+                            updated = prev.map((event) =>
+                                event.id === selectedDepartment.id
+                                    ? res.data.data
+                                    : event
+                            );
+                        } else {
+                            updated = [...prev, res.data.data];
+                        }
+
+                        return updated;
+                    });
+
+                    if (res.data.unset_header) {
+                        const target = localDepartments.find(
+                            (dep) => dep.id === res.data.unset_header
+                        );
+                        if (target) {
+                            target.header_id = null;
+                        }
+                    }
+                    setShowCreateDepartmentModal(false);
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
+
+    // Handle Department Edit
+    const handleDepartmentEdit = () => {
+        setIsEdit(true);
+        setShowModal(false);
+        setShowCreateDepartmentModal(true);
+    };
+
+    // Hadle Department Delete
+    const handleDepartmentDelete = () => {
+        axios
+            .delete(route("departments.destroy", selectedDepartment?.id))
+            .then((res) => {
+                if (res.data.status === "success") {
+                    setLocalDepartments((prev) =>
+                        prev.filter(
+                            (employee) => employee.id !== selectedDepartment?.id
+                        )
+                    );
+                    setShowModal(false);
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+            });
     };
 
     return (
@@ -38,7 +116,7 @@ export default function DepartmentsPage({ departments }: DepartmentProps) {
                         <tr>
                             <th className="px-2 lg:px-4 py-3">No</th>
                             <th className="px-2 lg:px-4 py-3">Department</th>
-                            <th className="px-2 lg:px-4 py-3">Head</th>
+                            <th className="px-2 lg:px-4 py-3">Header</th>
                             <th className="px-2 lg:px-4 py-3 hidden lg:table-cell">
                                 Employees
                             </th>
@@ -49,7 +127,7 @@ export default function DepartmentsPage({ departments }: DepartmentProps) {
                         </tr>
                     </thead>
                     <tbody>
-                        {departments.map((dept, index) => (
+                        {localDepartments.map((dept, index) => (
                             <tr
                                 key={index}
                                 className="border-b border-gray-700 hover:bg-gray-600"
@@ -62,7 +140,10 @@ export default function DepartmentsPage({ departments }: DepartmentProps) {
                                     {dept.name}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3">
-                                    {dept.head}
+                                    {users.find(
+                                        (usr) =>
+                                            usr.employee_id === dept.header_id
+                                    )?.full_name || "No Header"}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3 hidden lg:table-cell">
                                     {dept.employees_count}
@@ -70,6 +151,10 @@ export default function DepartmentsPage({ departments }: DepartmentProps) {
                                 <td className="px-2 lg:px-4 py-3 hidden xl:table-cell">
                                     {new Date(
                                         dept.created_at
+                                            ? new Date(
+                                                  dept.created_at
+                                              ).toLocaleDateString()
+                                            : "N/A"
                                     ).toLocaleDateString()}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3">
@@ -102,12 +187,22 @@ export default function DepartmentsPage({ departments }: DepartmentProps) {
                     show={showModal}
                     onClose={() => setShowModal(false)}
                     department={selectedDepartment}
+                    onDelete={handleDepartmentDelete}
+                    onEdit={handleDepartmentEdit}
+                    header={users.find(
+                        (usr) =>
+                            usr.employee_id === selectedDepartment.header_id
+                    )}
                 />
             )}
             {/* Create Department Modal */}
             <CreateDepartment
                 isOpen={showCreateDepartmentModal}
                 onClose={() => setShowCreateDepartmentModal(false)}
+                onCreate={handleDepartmentCreate}
+                isEdit={isEdit}
+                editData={selectedDepartment}
+                users={users}
             />
         </AdminLayout>
     );

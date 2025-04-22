@@ -26,8 +26,12 @@ export enum Status {
     INACTIVE = "Inactive",
     SUSPENDED = "Suspended",
     PENDING = "Pending",
+}
+
+export enum Approving {
     APPROVED = "Approved",
     REJECTED = "Rejected",
+    PENDING = "Pending",
 }
 
 export enum Gender {

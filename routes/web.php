@@ -29,6 +29,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Department Management Routes
     Route::get("/Departments", [DepartmentController::class, "index"])->name("departments");
+    Route::post("/Departments", [DepartmentController::class, "store"])->name("departments.store");
+    Route::put("/Departments/{id}", [DepartmentController::class, "update"])->name("departments.update");
+    Route::delete("/Departments/{id}", [DepartmentController::class, "destroy"])->name("departments.destroy");
 
     // Settings Routes
     Route::get("/Settings", [SettingsController::class, "index"])->name("settings");
