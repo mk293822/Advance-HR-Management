@@ -26,7 +26,7 @@ class CreateEmployeeRequest extends FormRequest
             'password'        => 'required|string|min:8', // assuming password_confirmation field exists
             'first_name'      => 'required|string|max:255',
             'last_name'       => 'required|string|max:255',
-            'phone'           => 'nullable|string|max:15', // Change to a more specific regex for phone numbers if needed
+            'phone'           => 'nullable|string', // Change to a more specific regex for phone numbers if needed
             'gender'          => 'nullable|string|in:Male,Female', // Example for gender options
             'date_of_birth'   => 'required|date|before:18years', // Example date validation
             // 'date_of_birth'   => 'required|date|before:' . \Carbon\Carbon::now()->subYears(18)->toDateString(),

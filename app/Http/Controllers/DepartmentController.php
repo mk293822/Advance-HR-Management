@@ -69,7 +69,7 @@ class DepartmentController extends Controller
         });
 
         return response()->json([
-            'satus' => 'success',
+            'status' => 'success',
             'data' => (new DepartmentResource($department))->toArray($request)
         ], 201);
     }
@@ -135,7 +135,7 @@ class DepartmentController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => (new DepartmentResource($department))->toArray($request),
-            'unset_header' => $unset_header->id
+            'unset_header' => $unset_header?->id
         ]);
     }
 

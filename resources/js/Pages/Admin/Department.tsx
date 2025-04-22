@@ -38,8 +38,8 @@ export default function DepartmentsPage({
 
         request
             .then((res) => {
-                setSelectedDepartment(null);
                 if (res.data.status === "success") {
+                    console.log(res.data.data);
                     setLocalDepartments((prev) => {
                         let updated;
                         if (isEdit && selectedDepartment) {
@@ -63,8 +63,9 @@ export default function DepartmentsPage({
                             target.header_id = null;
                         }
                     }
-                    setShowCreateDepartmentModal(false);
                 }
+                setShowCreateDepartmentModal(false);
+                setSelectedDepartment(null);
             })
             .catch((err) => {
                 console.error(err);
@@ -199,7 +200,10 @@ export default function DepartmentsPage({
             {/* Create Department Modal */}
             <CreateDepartment
                 isOpen={showCreateDepartmentModal}
-                onClose={() => setShowCreateDepartmentModal(false)}
+                onClose={() => {
+                    setShowCreateDepartmentModal(false);
+                    setIsEdit(false);
+                }}
                 onCreate={handleDepartmentCreate}
                 isEdit={isEdit}
                 editData={selectedDepartment}

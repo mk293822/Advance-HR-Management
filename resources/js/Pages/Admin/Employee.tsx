@@ -37,7 +37,6 @@ const index = ({
 
         request
             .then((res) => {
-                setSelectedEmployee(null);
                 if (res.data.status === "success") {
                     setLocalEmployees((prev) => {
                         let updated;
@@ -53,9 +52,9 @@ const index = ({
 
                         return updated;
                     });
-
-                    setShowCreateEmployee(false);
                 }
+                setShowCreateEmployee(false);
+                setSelectedEmployee(null);
             })
             .catch((err) => {
                 console.error(err);

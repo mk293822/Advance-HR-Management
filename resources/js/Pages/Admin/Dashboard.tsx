@@ -176,7 +176,6 @@ export default function Dashboard({
 
         request
             .then((res) => {
-                setSelectedEvent(null);
                 if (res.data.status === "success") {
                     setLocalUpcomingEvents((prev) => {
                         let updated;
@@ -196,9 +195,9 @@ export default function Dashboard({
                                 new Date(b.start_date).getTime()
                         );
                     });
-
-                    setOpenCreateEventModal(false);
                 }
+                setOpenCreateEventModal(false);
+                setSelectedEvent(null);
             })
             .catch((err) => {
                 console.error(err);
