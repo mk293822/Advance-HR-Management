@@ -58,10 +58,10 @@ const index = ({
                     setLocalEmployees((prev) => {
                         let updated;
                         if (showEditEmployee && selectedEmployee) {
-                            updated = prev.map((event) =>
-                                event.id === selectedEmployee.id
+                            updated = prev.map((pre) =>
+                                pre.id === selectedEmployee.id
                                     ? res.data.data
-                                    : event
+                                    : pre
                             );
                         } else {
                             updated = [...prev, res.data.data];

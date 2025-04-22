@@ -7,6 +7,7 @@ import UpcomingEventModal from "@/Components/UpcomingEvent/UpcomingEventModal";
 import ActionButton from "@/Components/ActionButton";
 import CreateEvent from "@/Components/UpcomingEvent/CreateEvent";
 import axios from "axios";
+import { type } from "os";
 
 export default function Dashboard({
     employee_count,
@@ -24,14 +25,18 @@ export default function Dashboard({
 
     const [pendingTasks, setPendingTasks] = useState<
         Array<{ value: string; type: string }>
-    >([
+    >(
         pending_leave_requests > 0
-            ? {
-                  value: `${pending_leave_requests} leave requests`,
-                  type: "leaveRequests",
-              }
-            : { value: "", type: "" },
-    ]);
+            ? [
+                  {
+                      value: `${pending_leave_requests} leave requests`,
+                      type: "leaveRequests",
+                  },
+              ]
+            : []
+    );
+
+    console.log(pendingTasks);
 
     const [leaveRequests, setLeaveRequests] = useState<Array<LeaveRequest>>(
         leave_requests
@@ -303,20 +308,21 @@ export default function Dashboard({
                             Pending Tasks
                         </h2>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            {pendingTasks.map((task, index) => (
-                                <li
-                                    key={index}
-                                    className="flex justify-between"
-                                >
-                                    <span>{task.value}</span>
-                                    <Link
-                                        href={route(task.type)}
-                                        className="text-blue-500 hover:underline"
+                            {pendingTasks.length > 0 &&
+                                pendingTasks.map((task, index) => (
+                                    <li
+                                        key={index}
+                                        className="flex justify-between"
                                     >
-                                        Review
-                                    </Link>
-                                </li>
-                            ))}
+                                        <span>{task.value}</span>
+                                        <Link
+                                            href={route(task.type)}
+                                            className="text-blue-500 hover:underline"
+                                        >
+                                            Review
+                                        </Link>
+                                    </li>
+                                ))}
                         </ul>
                     </div>
                 </div>

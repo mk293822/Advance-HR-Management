@@ -9,6 +9,7 @@ import {
     ComboboxOptions,
 } from "@headlessui/react";
 import Fuse from "fuse.js";
+import ActionButton from "../ActionButton";
 
 interface Props {
     isOpen: boolean;
@@ -223,19 +224,16 @@ export default function CreateDepartment({
                     </div>
 
                     <div className="flex justify-end space-x-3">
-                        <button
+                        <ActionButton
                             type="button"
                             onClick={Close}
-                            className="px-4 py-2 text-sm border border-gray-600 text-gray-300 rounded hover:bg-gray-700"
+                            color="gray"
                         >
                             Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded"
-                        >
+                        </ActionButton>
+                        <ActionButton type="submit" color="blue">
                             {isEdit ? "Update" : "Create"}
-                        </button>
+                        </ActionButton>
                     </div>
                 </form>
             </Modal>

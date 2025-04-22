@@ -19,19 +19,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete("/UpcomingEvent/{id}", [DashboardController::class, "event_destroy"])->name("upcomingEvent.destroy");
 
     // Employee Management Routes
-    Route::get("/Employees", [EmployeeController::class, "index"])->name("employees");
-    Route::post("/Employees", [EmployeeController::class, "store"])->name("employees.store");
-    Route::put("/Employees/{id}", [EmployeeController::class, "update"])->name("employees.update");
-    Route::delete("/Employees/{id}", [EmployeeController::class, "destroy"])->name("employees.destroy");
+    Route::apiResource('employees', EmployeeController::class)->only([
+        'index',
+        'store',
+        'update',
+        'destroy'
+    ])->names([
+        'index' => 'employees',
+        'store' => 'employees.store',
+        'update' => 'employees.update',
+        'destroy' => 'employees.destroy',
+    ]);
 
     // Leave Request Management Routes
     Route::get("/LeaveRequests", [LeaveRequestController::class, "index"])->name("leaveRequests");
 
+    // Leave Request Approving Routes
+    Route::put('/LeaveRequests/approving/{id}', [LeaveRequestController::class, 'approving'])->name("leaveRequests.approving");
+
     // Department Management Routes
-    Route::get("/Departments", [DepartmentController::class, "index"])->name("departments");
-    Route::post("/Departments", [DepartmentController::class, "store"])->name("departments.store");
-    Route::put("/Departments/{id}", [DepartmentController::class, "update"])->name("departments.update");
-    Route::delete("/Departments/{id}", [DepartmentController::class, "destroy"])->name("departments.destroy");
+    Route::apiResource('departments', DepartmentController::class)->only([
+        'index',
+        'store',
+        'update',
+        'destroy'
+    ])->names([
+        'index' => 'departments',
+        'store' => 'departments.store',
+        'update' => 'departments.update',
+        'destroy' => 'departments.destroy',
+    ]);
 
     // Settings Routes
     Route::get("/Settings", [SettingsController::class, "index"])->name("settings");

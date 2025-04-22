@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ApprovingEnum;
 use App\Http\Resources\LeaveRequestResource;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
@@ -17,8 +18,20 @@ class LeaveRequestController extends Controller
         $leave_requests = LeaveRequestResource::collection(
             LeaveRequest::orderByDesc('start_date')->get()
         )->toArray($request);
+
         return Inertia::render("Admin/LeaveRequest", [
             'leave_requests' => $leave_requests,
+        ]);
+    }
+
+    public function approving(Request $request, string $id)
+    {
+        $leaveRequest = LeaveRequest::findOrFail($id);
+        $leaveRequest->update(['status' => $request->get('type') === "approve" ? ApprovingEnum::APPROVED->value : ApprovingEnum::REJECTED->value]);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => (new LeaveRequestResource($leaveRequest))->toArray($request),
         ]);
     }
 

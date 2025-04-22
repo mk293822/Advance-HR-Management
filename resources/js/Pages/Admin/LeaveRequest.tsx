@@ -2,6 +2,7 @@ import LeaveRequestModal from "@/Components/LeaveRequest/LeaveRequestModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { LeaveRequest, LeaveRequestProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
+import axios from "axios";
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 
@@ -34,6 +35,28 @@ export default function LeaveRequestsPage({
     const handleLeaveRequestClick = (leave: LeaveRequest) => {
         setSelectedLeave(leave);
         setIsModalOpen(true);
+    };
+
+    // Handle Leave Request Approving
+    const handleRequestApprove = ({
+        type,
+        id,
+    }: {
+        type: string;
+        id: number;
+    }) => {
+        axios
+            .put(route("leaveRequests.approving", id), { type: type })
+            .then((res) => {
+                if (res.data.status === "success") {
+                    setLocalLeaveRequests((pre) =>
+                        pre.map((leave) =>
+                            leave.id === id ? res.data.data : leave
+                        )
+                    );
+                }
+            })
+            .catch((err) => console.log(err));
     };
 
     return (
@@ -127,10 +150,28 @@ export default function LeaveRequestsPage({
                                 <td className="py-3 text-center px-2 md:px-0">
                                     {leave.status === "pending" && (
                                         <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-                                            <button className="px-3 py-1 text-xs text-green-500 border border-green-500 rounded hover:bg-green-500 hover:text-white transition">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRequestApprove({
+                                                        type: "approve",
+                                                        id: leave.id,
+                                                    });
+                                                }}
+                                                className="px-3 py-1 text-xs text-green-500 border border-green-500 rounded hover:bg-green-500 hover:text-white transition"
+                                            >
                                                 Approve
                                             </button>
-                                            <button className="px-3 py-1 text-xs text-red-500 border border-red-500 rounded hover:bg-red-500 hover:text-white transition">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRequestApprove({
+                                                        type: "reject",
+                                                        id: leave.id,
+                                                    });
+                                                }}
+                                                className="px-3 py-1 text-xs text-red-500 border border-red-500 rounded hover:bg-red-500 hover:text-white transition"
+                                            >
                                                 Reject
                                             </button>
                                         </div>
@@ -157,10 +198,18 @@ export default function LeaveRequestsPage({
                     onApprove={() => {
                         // Handle approve action
                         setIsModalOpen(false);
+                        handleRequestApprove({
+                            type: "approve",
+                            id: selectedLeave.id,
+                        });
                     }}
                     onReject={() => {
                         // Handle reject action
                         setIsModalOpen(false);
+                        handleRequestApprove({
+                            type: "reject",
+                            id: selectedLeave.id,
+                        });
                     }}
                 />
             )}
