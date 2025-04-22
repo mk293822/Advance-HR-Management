@@ -54,27 +54,37 @@ A modern **Human Resource Management System** built with **Laravel 11** (API bac
 ```bash
 git clone https://github.com/your-username/hr-management.git
 cd hr-management
+```
 
-# Install dependencies
+2. **Install dependencies**
+
+```bash
 composer install
-
-# Copy and setup environment
-cp .env.example .env
-php artisan key:generate
-
-# Configure database in .env
-# Then run:
-php artisan migrate --seed
-
-# npm packages
 npm install
 npm run build
+```
 
-# run npm
+3. **Copy and setup environment**
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+4. **Configure database in .env**
+
+5. **Then run**
+
+```bash
+php artisan migrate --seed
+```
+
+6. **Start The Project**
+
+```bash
 npm run dev
-
-# Start Laravel server
 php artisan serve
+
 ```
 
 ## 📝 License
