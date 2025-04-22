@@ -28,8 +28,13 @@ const EmployeeModal: React.FC<Props> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 text-sm">
-                <Detail label="Name" value={employee.name} />
+                <div>
+                    <span className="block text-gray-400 mb-1">Name</span>
+                    <span className="text-gray-100">{`${employee.first_name} ${employee.last_name}`}</span>
+                </div>
                 <Detail label="Email" value={employee.email} />
+                <Detail label="Username" value={employee.name} />
+                <Detail label="Role" value={employee.role.name} />
                 <Detail label="Phone" value={employee.phone || "N/A"} />
                 <Detail label="Gender" value={employee.gender || "N/A"} />
                 <Detail label="Employee ID" value={employee.employee_id} />

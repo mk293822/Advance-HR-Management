@@ -5,7 +5,8 @@ import AdminLayout from "@/Layouts/AdminLayout";
 import { Department, DepartmentProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
-import { useState } from "react";
+import Fuse from "fuse.js";
+import { useMemo, useState } from "react";
 
 export default function DepartmentsPage({
     departments,
@@ -20,6 +21,22 @@ export default function DepartmentsPage({
     const [isEdit, setIsEdit] = useState(false);
     const [localDepartments, setLocalDepartments] =
         useState<Department[]>(departments);
+
+    // Search box
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const fuse = useMemo(() => {
+        return new Fuse(localDepartments, {
+            keys: ["name", "header"],
+            threshold: 0.5,
+        });
+    }, [localDepartments]);
+
+    const filteredDepartments = useMemo(() => {
+        return searchQuery
+            ? fuse.search(searchQuery).map((res) => res.item)
+            : localDepartments;
+    }, [fuse, searchQuery, localDepartments]);
 
     // Handle Department Detail Modal
     const handleDepartmentClick = (department: Department) => {
@@ -104,12 +121,40 @@ export default function DepartmentsPage({
 
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-white">Departments</h1>
-                <ActionButton
-                    color="blue"
-                    onClick={() => setShowCreateDepartmentModal(true)}
-                >
-                    + Add Department
-                </ActionButton>
+                <div className="flex justify-end items-center w-[60%] gap-4">
+                    {/* Search Input */}
+                    <div className="relative w-72">
+                        <input
+                            type="search"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                        <div className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400">
+                            <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+                    <ActionButton
+                        color="blue"
+                        onClick={() => setShowCreateDepartmentModal(true)}
+                    >
+                        + Add Department
+                    </ActionButton>
+                </div>
             </div>
 
             <div className="overflow-x-auto rounded-lg shadow">
@@ -129,7 +174,7 @@ export default function DepartmentsPage({
                         </tr>
                     </thead>
                     <tbody>
-                        {localDepartments.map((dept, index) => (
+                        {filteredDepartments.map((dept, index) => (
                             <tr
                                 key={index}
                                 className="border-b border-gray-700 hover:bg-gray-600"

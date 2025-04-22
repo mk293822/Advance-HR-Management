@@ -5,7 +5,8 @@ import AdminLayout from "@/Layouts/AdminLayout";
 import { Employee, EmployeeProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
-import { useState } from "react";
+import Fuse from "fuse.js";
+import { useEffect, useMemo, useState } from "react";
 
 const index = ({
     all_employees,
@@ -22,6 +23,22 @@ const index = ({
     const [showEditEmployee, setShowEditEmployee] = useState(false);
     const [localEmployees, setLocalEmployees] =
         useState<Employee[]>(all_employees);
+
+    // Search box
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const fuse = useMemo(() => {
+        return new Fuse(localEmployees, {
+            keys: ["name", "first_name", "last_name"],
+            threshold: 0.5,
+        });
+    }, [localEmployees]);
+
+    const filteredEmployees = useMemo(() => {
+        return searchQuery
+            ? fuse.search(searchQuery).map((res) => res.item)
+            : localEmployees;
+    }, [fuse, searchQuery, localEmployees]);
 
     // Handle employee modal
     const handleEmployeeClick = (employee: Employee) => {
@@ -95,7 +112,36 @@ const index = ({
                 <h1 className="text-2xl font-bold text-white">
                     Leave Requests
                 </h1>
-                <div className="flex gap-4">
+
+                <div className="flex justify-end items-center gap-4 w-[60%]">
+                    {/* Search Input */}
+                    <div className="relative w-72">
+                        <input
+                            type="search"
+                            placeholder="Search"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                        />
+                        <div className="absolute top-1/2 left-3 transform -translate-y-1/2 text-gray-400">
+                            <svg
+                                className="h-5 w-5"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"
+                                />
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Action Button */}
                     <ActionButton
                         color="blue"
                         onClick={() => setShowCreateEmployee(true)}
@@ -131,7 +177,7 @@ const index = ({
                         </tr>
                     </thead>
                     <tbody className="bg-gray-800 divide-y  divide-gray-700">
-                        {localEmployees.map((employee, index) => (
+                        {filteredEmployees.map((employee, index) => (
                             <tr
                                 key={index}
                                 onClick={() => handleEmployeeClick(employee)}
