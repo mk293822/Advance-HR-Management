@@ -54,4 +54,29 @@ A modern **Human Resource Management System** built with **Laravel 11** (API bac
 ```bash
 git clone https://github.com/your-username/hr-management.git
 cd hr-management
+
+# Install dependencies
+composer install
+
+# Copy and setup environment
+cp .env.example .env
+php artisan key:generate
+
+# Configure database in .env
+# Then run:
+php artisan migrate --seed
+
+# npm packages
+npm install
+npm run build
+
+# run npm
+npm run dev
+
+# Start Laravel server
+php artisan serve
 ```
+
+## 📝 License
+
+This project is licensed under the [MIT License](./LICENSE).
