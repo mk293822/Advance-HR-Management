@@ -19,22 +19,26 @@ export default function Dashboard({
     attendances,
     chart_type,
 }: DashboardProps) {
-    const [pendingTasks, setPendingTasks] = useState<
-        Array<{ value: string; type: string }>
-    >([
+    const pendingItems = [
         {
+            count: pending_approvals.leave_requests_count,
             value: `${pending_approvals.leave_requests_count} pending leave requests`,
             type: "leaveRequests",
         },
         {
+            count: pending_approvals.employees_count,
             value: `${pending_approvals.employees_count} pending employee`,
             type: "employees",
         },
         {
+            count: pending_approvals.departments_count,
             value: `${pending_approvals.departments_count} pending departments`,
             type: "departments",
         },
-    ]);
+    ].filter((item) => item.count > 0);
+
+    const [pendingTasks, setPendingTasks] =
+        useState<Array<{ value: string; type: string }>>(pendingItems);
 
     const [leaveRequests, setLeaveRequests] = useState<
         Array<LeaveRequest & { date: string }>
