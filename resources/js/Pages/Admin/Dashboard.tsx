@@ -8,7 +8,6 @@ import CreateEvent from "@/Components/UpcomingEvent/CreateEvent";
 import axios from "axios";
 import AttendanceChart from "@/Components/Parts/AttendanceChart";
 import ErrorShowModal from "@/Components/ErrorShowModal";
-import { error } from "console";
 
 export default function Dashboard({
     employee_count,
@@ -59,7 +58,13 @@ export default function Dashboard({
         useState<UpcomingEvent[]>(upcoming_events);
     const [isEditEvent, setIsEditEvent] = useState(false);
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState<{
+        message: string;
+        status: number;
+    }>({
+        message: "",
+        status: 0,
+    });
 
     // cards
     const cards: Array<{ title: string; count: number; color: string }> = [
@@ -125,7 +130,10 @@ export default function Dashboard({
                 setSelectedEvent(null);
             })
             .catch((err) => {
-                setErrorMessage(err.response.data);
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
                 setSelectedEvent(null);
                 setShowErrorModal(true);
                 setIsEditEvent(false);
@@ -158,7 +166,10 @@ export default function Dashboard({
                     }
                 })
                 .catch((err) => {
-                    setErrorMessage(err.response.data);
+                    setErrorMessage({
+                        message: err.response.data.errors,
+                        status: err.response.status,
+                    });
                     setSelectedEvent(null);
                     setShowErrorModal(true);
                     setIsEditEvent(false);

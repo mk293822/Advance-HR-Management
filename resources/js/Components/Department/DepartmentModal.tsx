@@ -10,12 +10,10 @@ type Props = {
     department: Department | null;
     onDelete: () => void;
     onEdit: () => void;
-    header:
-        | {
-              full_name: string;
-              employee_id: string;
-          }
-        | undefined;
+    header: {
+        full_name: string;
+        employee_id: string | null;
+    } | null;
 };
 
 const DepartmentModal: React.FC<Props> = ({

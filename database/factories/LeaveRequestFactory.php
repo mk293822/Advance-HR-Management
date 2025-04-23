@@ -24,8 +24,6 @@ class LeaveRequestFactory extends Factory
         $endDate = (clone $startDate)->modify('+' . rand(1, 5) . ' days');
 
         return [
-            'user_id' => $this->faker->randomElement(User::pluck('id')->toArray()),
-            'employee_id' => $this->faker->randomElement(User::pluck('employee_id')->toArray()),
             'start_date' => $startDate,
             'end_date' => $endDate,
             'leave_type' => $this->faker->randomElement(['Sick', 'Casual', 'Annual']),

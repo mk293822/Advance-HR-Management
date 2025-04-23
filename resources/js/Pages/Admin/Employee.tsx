@@ -26,7 +26,13 @@ const index = ({
         useState<Employee[]>(all_employees);
 
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState<{
+        message: string;
+        status: number;
+    }>({
+        message: "",
+        status: 0,
+    });
 
     // Search box
     const [searchQuery, setSearchQuery] = useState("");
@@ -78,7 +84,10 @@ const index = ({
                 setSelectedEmployee(null);
             })
             .catch((err) => {
-                setErrorMessage(err.response.data);
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
                 setSelectedEmployee(null);
                 setShowErrorModal(true);
                 setShowEditEmployee(false);
@@ -109,7 +118,10 @@ const index = ({
                 }
             })
             .catch((err) => {
-                setErrorMessage(err.response.data);
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
                 setSelectedEmployee(null);
                 setShowErrorModal(true);
                 setShowEditEmployee(false);

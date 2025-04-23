@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enums\AttendanceEnum;
 use App\Models\Attendance;
+use App\Models\LeaveRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -44,7 +45,7 @@ class AttendanceSeeder extends Seeder
                     $checkOut = $date->copy()->setTime(rand(17, 18), rand(0, 59));
                 }
 
-                Attendance::create([
+                $attendance = Attendance::create([
                     'employee_id' => $user->employee_id,
                     'date' => $date->toDateString(),
                     'status' => $status,
@@ -52,6 +53,14 @@ class AttendanceSeeder extends Seeder
                     'check_out' => $checkOut,
                     'remarks' => rand(0, 3) ? null : 'Auto generated',
                 ]);
+
+                if ($status === 'leave') {
+                    LeaveRequest::factory()->create([
+                        'attendance_id' => $attendance,
+                        'user_id' => $user->id,
+                        'employee_id' => $user->employee_id,
+                    ]);
+                }
 
                 $date->addDay();
             }

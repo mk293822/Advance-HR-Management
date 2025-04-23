@@ -31,6 +31,7 @@ class LeaveRequestController extends Controller
         $leaveRequest->update(['status' => $request->get('type') === "approve" ? ApprovingEnum::APPROVED->value : ApprovingEnum::REJECTED->value]);
 
         LeaveRequestAutomation::dispatch();
+
         return response()->json([
             'status' => 'success',
             'data' => (new LeaveRequestResource($leaveRequest))->toArray($request),

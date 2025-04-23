@@ -18,8 +18,6 @@ class DepartmentFactory extends Factory
      */
     public function definition(): array
     {
-
-
         return [
             'description' => $this->faker->sentence,
             'status' => $this->faker->randomElement(UserStatusEnum::cases())->value,

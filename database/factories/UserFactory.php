@@ -40,7 +40,6 @@ class UserFactory extends Factory
             'address' => $this->faker->address,
 
             'employee_id' => 'EMP-' . $this->faker->unique()->numerify('###'),
-            'department_id' => $this->faker->randomElement(Department::pluck('id')->toArray()),
             'position_id' => $this->faker->randomElement(Position::pluck('id')->toArray()),
             'role_id' => $this->faker->randomElement(Role::pluck('id')->toArray()),
             'date_hired' => $this->faker->date('Y-m-d', 'now'),

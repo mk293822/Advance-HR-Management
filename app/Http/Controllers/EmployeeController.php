@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateEmployeeRequest;
 use App\Http\Resources\DepartmentResource;
 use App\Http\Resources\UserResource;
+use App\Models\Attendance;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\User;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -95,9 +97,9 @@ class EmployeeController extends Controller
 
 
         if (!Hash::check($validated['password'], $employee->password)) {
-            return response()->json([
-                'error' => 'Password does not match',
-            ], 422);
+            throw ValidationException::withMessages([
+                'password' => ['The password does not match.'],
+            ]);
         }
 
         // Update the employee
@@ -116,6 +118,12 @@ class EmployeeController extends Controller
     {
         // Find the employee by ID
         $employee = User::findOrFail($id);
+
+        Department::where('header_id', $employee->employee_id)->first()->update([
+            'header_id' => null,
+        ]);
+
+        Attendance::where('employee_id', $employee->employee_id)->delete();
 
         // Delete the employee
         $employee->delete();

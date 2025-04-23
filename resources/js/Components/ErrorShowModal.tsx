@@ -1,5 +1,3 @@
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
-import Modal from "./Modal";
 import { useEffect } from "react";
 import {
     Dialog,
@@ -10,7 +8,7 @@ import {
 
 interface ErrorModalProps {
     show: boolean;
-    message: string;
+    message: { message: string; status: number };
     onClose: () => void;
     duration?: number; // in milliseconds (optional)
 }
@@ -19,7 +17,7 @@ export default function ErrorShowModal({
     show,
     message,
     onClose,
-    duration = 3000, // default: 3 seconds
+    duration = 5000, // default: 3 seconds
 }: ErrorModalProps) {
     useEffect(() => {
         if (show) {
@@ -61,8 +59,14 @@ export default function ErrorShowModal({
                                 d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
                             />
                         </svg>
-                        <span className="text-wrap max-w-[60vw] max-h-[10vh] overflow-y-auto">
-                            {message.slice(0, 100)}
+                        <span className="text-wrap capitalize flex flex-col max-w-[60vw] max-h-[10vh] overflow-y-auto">
+                            {message.status === 500
+                                ? "Internal Server Error"
+                                : Object.values(message.message)
+                                      .flat()
+                                      .map((err, index) => (
+                                          <span key={index}>{err}</span>
+                                      ))}
                         </span>
                     </DialogPanel>
                 </TransitionChild>

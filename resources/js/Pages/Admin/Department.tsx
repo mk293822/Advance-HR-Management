@@ -23,7 +23,13 @@ export default function DepartmentsPage({
     const [localDepartments, setLocalDepartments] =
         useState<Department[]>(departments);
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState<{
+        message: string;
+        status: number;
+    }>({
+        message: "",
+        status: 0,
+    });
 
     // Search box
     const [searchQuery, setSearchQuery] = useState("");
@@ -59,7 +65,6 @@ export default function DepartmentsPage({
         request
             .then((res) => {
                 if (res.data.status === "success") {
-                    console.log(res.data.data);
                     setLocalDepartments((prev) => {
                         let updated;
                         if (isEdit && selectedDepartment) {
@@ -80,7 +85,9 @@ export default function DepartmentsPage({
                             (dep) => dep.id === res.data.unset_header
                         );
                         if (target) {
-                            target.header_id = null;
+                            if (target.header) {
+                                target.header.employee_id = null;
+                            }
                         }
                     }
                 }
@@ -88,7 +95,10 @@ export default function DepartmentsPage({
                 setSelectedDepartment(null);
             })
             .catch((err) => {
-                setErrorMessage(err.response.data);
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
                 setShowErrorModal(true);
                 setIsEdit(false);
                 setSelectedDepartment(null);
@@ -119,7 +129,10 @@ export default function DepartmentsPage({
                 }
             })
             .catch((err) => {
-                setErrorMessage(err.response.data);
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
                 setShowErrorModal(true);
                 setIsEdit(false);
                 setSelectedDepartment(null);
@@ -200,10 +213,7 @@ export default function DepartmentsPage({
                                     {dept.name}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3">
-                                    {users.find(
-                                        (usr) =>
-                                            usr.employee_id === dept.header_id
-                                    )?.full_name || "No Header"}
+                                    {dept.header?.full_name || "No Header"}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3 hidden lg:table-cell">
                                     {dept.employees_count}
@@ -249,10 +259,7 @@ export default function DepartmentsPage({
                     department={selectedDepartment}
                     onDelete={handleDepartmentDelete}
                     onEdit={handleDepartmentEdit}
-                    header={users.find(
-                        (usr) =>
-                            usr.employee_id === selectedDepartment.header_id
-                    )}
+                    header={selectedDepartment.header}
                 />
             )}
             {/* Create Department Modal */}

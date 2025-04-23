@@ -57,7 +57,10 @@ export type Department = {
     id?: number;
     name: string;
     description: string | null;
-    header_id: string | null;
+    header: {
+        full_name: string;
+        employee_id: string | null;
+    } | null;
     employees_count?: number;
     status: Status | string; // Use string literal union if status is fixed
     created_at?: string;

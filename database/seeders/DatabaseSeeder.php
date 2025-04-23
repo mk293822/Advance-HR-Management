@@ -2,14 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\Attendance;
 use App\Models\Department;
-use App\Models\Employee;
-use App\Models\LeaveRequest;
 use App\Models\Position;
 use App\Models\UpcomingEvents;
 use App\Models\User;
-use Database\Factories\AttendanceFactory;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -80,7 +76,7 @@ class DatabaseSeeder extends Seeder
             'role_id' => Role::where('name', 'Admin')->first()->id,
         ]);
 
-        $user = User::factory(10)->create();
+        User::factory(10)->create();
 
         $employee_ids = User::inRandomOrder()
             ->limit(count($departmentNames))
@@ -93,10 +89,15 @@ class DatabaseSeeder extends Seeder
             ]);
         });
 
+        User::all()->each(function ($usr) {
+            $department_id = Department::where('header_id', $usr->employee_id)->first()?->id;
+            $usr->update([
+                'department_id' => $department_id ?? null,
+            ]);
+        });
+
         UpcomingEvents::factory(20)->create();
 
         $this->call(AttendanceSeeder::class);
-
-        LeaveRequest::factory(20)->create();
     }
 }

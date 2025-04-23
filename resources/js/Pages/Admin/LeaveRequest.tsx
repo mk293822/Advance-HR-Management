@@ -18,7 +18,13 @@ export default function LeaveRequestsPage({
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
     const [showErrorModal, setShowErrorModal] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState<{
+        message: string;
+        status: number;
+    }>({
+        message: "",
+        status: 0,
+    });
 
     // Search box
     const [searchQuery, setSearchQuery] = useState("");
@@ -61,7 +67,10 @@ export default function LeaveRequestsPage({
                 }
             })
             .catch((err) => {
-                setErrorMessage(err.response.data);
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
                 setSelectedLeave(null);
                 setShowErrorModal(true);
                 setIsModalOpen(false);
