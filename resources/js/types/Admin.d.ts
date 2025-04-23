@@ -6,11 +6,18 @@ export type DashboardProps = {
     employee_count: number;
     department_count: number;
     leave_request_count: number;
-    pending_approval_count: number;
+    pending_approvals: PendingApproval;
     upcoming_events: UpcomingEvent[];
     leave_requests: LeaveRequest[];
     attendances: AttendanceProps[];
     chart_type: "day" | "month";
+};
+
+// Pending Approvals
+export type PendingApproval = {
+    leave_requests_count: number;
+    employees_count: number;
+    departments_count: number;
 };
 
 // Attendances types

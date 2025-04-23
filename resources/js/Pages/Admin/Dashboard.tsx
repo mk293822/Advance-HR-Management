@@ -1,41 +1,39 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Head, Link, router } from "@inertiajs/react";
-import Chart from "chart.js/auto";
+import React, { useState } from "react";
+import { Head, Link } from "@inertiajs/react";
 import { DashboardProps, LeaveRequest, UpcomingEvent } from "@/types/Admin";
 import AdminLayout from "@/Layouts/AdminLayout";
 import UpcomingEventModal from "@/Components/UpcomingEvent/UpcomingEventModal";
 import ActionButton from "@/Components/ActionButton";
 import CreateEvent from "@/Components/UpcomingEvent/CreateEvent";
 import axios from "axios";
+import AttendanceChart from "@/Components/Parts/AttendanceChart";
 
 export default function Dashboard({
     employee_count,
     department_count,
     leave_request_count,
-    pending_approval_count,
+    pending_approvals,
     leave_requests,
     upcoming_events,
     attendances,
     chart_type,
 }: DashboardProps) {
-    const chartRef = useRef(null);
-
-    const pending_leave_requests = leave_requests.filter(
-        (request) => request.status === "pending"
-    ).length;
-
     const [pendingTasks, setPendingTasks] = useState<
         Array<{ value: string; type: string }>
-    >(
-        pending_leave_requests > 0
-            ? [
-                  {
-                      value: `${pending_leave_requests} leave requests`,
-                      type: "leaveRequests",
-                  },
-              ]
-            : []
-    );
+    >([
+        {
+            value: `${pending_approvals.leave_requests_count} pending leave requests`,
+            type: "leaveRequests",
+        },
+        {
+            value: `${pending_approvals.employees_count} pending employee`,
+            type: "employees",
+        },
+        {
+            value: `${pending_approvals.departments_count} pending departments`,
+            type: "departments",
+        },
+    ]);
 
     const [leaveRequests, setLeaveRequests] = useState<
         Array<LeaveRequest & { date: string }>
@@ -59,172 +57,6 @@ export default function Dashboard({
         useState<UpcomingEvent[]>(upcoming_events);
     const [isEditEvent, setIsEditEvent] = useState(false);
 
-    // Chart
-    useEffect(() => {
-        let chartInstance: Chart | null = null;
-
-        let labels: string[] = [];
-        let presentData: number[] = [];
-        let absentData: number[] = [];
-        let halfDayData: number[] = [];
-
-        if (chart_type === "month") {
-            // Generate monthly data
-            const monthlyData: Array<{
-                present: number;
-                absent: number;
-                late: number;
-                leave: number;
-                half_day: number;
-            }> = Array.from({ length: 12 }, () => ({
-                present: 0,
-                absent: 0,
-                half_day: 0,
-                leave: 0,
-                late: 0,
-            }));
-
-            attendances.forEach((attendance) => {
-                const date = new Date(attendance.date);
-                const month = date.getMonth();
-                const year = date.getFullYear();
-                const status = attendance.status;
-
-                if (year === new Date().getFullYear()) {
-                    if (status in monthlyData[month]) {
-                        monthlyData[month][
-                            status as keyof (typeof monthlyData)[number]
-                        ] += 1;
-                    }
-                }
-            });
-
-            const currentMonth = new Date().getMonth();
-            labels = [
-                "Jan",
-                "Feb",
-                "Mar",
-                "Apr",
-                "May",
-                "Jun",
-                "Jul",
-                "Aug",
-                "Sep",
-                "Oct",
-                "Nov",
-                "Dec",
-            ];
-
-            presentData = monthlyData.map((m, i) =>
-                i <= currentMonth ? m.present + m.late : 0
-            );
-            absentData = monthlyData.map((m, i) =>
-                i <= currentMonth ? m.absent + m.leave : 0
-            );
-            halfDayData = monthlyData.map((m, i) =>
-                i <= currentMonth ? m.half_day : 0
-            );
-        } else {
-            // Generate daily data for current month
-            const daysInMonth = new Date(
-                new Date().getFullYear(),
-                new Date().getMonth() + 1,
-                0
-            ).getDate();
-
-            const dailyData = Array.from({ length: daysInMonth }, () => ({
-                present: 0,
-                absent: 0,
-                half_day: 0,
-                leave: 0,
-                late: 0,
-            }));
-
-            attendances.forEach((attendance) => {
-                const date = new Date(attendance.date);
-                const day = date.getDate();
-                const month = date.getMonth();
-                const year = date.getFullYear();
-
-                if (
-                    month === new Date().getMonth() &&
-                    year === new Date().getFullYear()
-                ) {
-                    if (attendance.status in dailyData[day - 1]) {
-                        dailyData[day - 1][
-                            attendance.status as keyof (typeof dailyData)[number]
-                        ] += 1;
-                    }
-                }
-            });
-
-            labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
-
-            presentData = dailyData.map((m) => m.present + m.late);
-            absentData = dailyData.map((m) => m.absent + m.leave);
-            halfDayData = dailyData.map((m) => m.half_day);
-        }
-
-        if (chartRef.current) {
-            chartInstance = new Chart(chartRef.current, {
-                type: "line",
-                data: {
-                    labels,
-                    datasets: [
-                        {
-                            label: "Present",
-                            data: presentData,
-                            borderColor: "#16a34a", // Emerald Green
-                            pointBackgroundColor: "#16a34a",
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0,
-                            spanGaps: true,
-                            pointRadius: 3,
-                            backgroundColor: "#16a34a",
-                        },
-                        {
-                            label: "Absent",
-                            data: absentData,
-                            borderColor: "#dc2626", // Strong Red
-                            pointBackgroundColor: "#dc2626",
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0,
-                            spanGaps: true,
-                            pointRadius: 3,
-                            backgroundColor: "#dc2626",
-                        },
-                        {
-                            label: "Half Day",
-                            data: halfDayData,
-                            borderColor: "#7c3aed", // Vivid Purple
-                            pointBackgroundColor: "#7c3aed",
-                            borderWidth: 2,
-                            fill: false,
-                            tension: 0,
-                            spanGaps: true,
-                            pointRadius: 3,
-                            backgroundColor: "#7c3aed",
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: "bottom",
-                        },
-                    },
-                },
-            });
-        }
-
-        return () => {
-            chartInstance?.destroy();
-        };
-    }, [attendances, chart_type]);
-
     // cards
     const cards: Array<{ title: string; count: number; color: string }> = [
         {
@@ -244,7 +76,9 @@ export default function Dashboard({
         },
         {
             title: "Pending Approvals",
-            count: pending_approval_count,
+            count:
+                pending_approvals.employees_count +
+                pending_approvals.leave_requests_count,
             color: "border-l-red-500",
         },
     ];
@@ -343,37 +177,11 @@ export default function Dashboard({
                     ))}
                 </div>
 
-                {/* Employee Chart */}
-                <div className="bg-gray-800 p-6 hidden md:block rounded-lg shadow col-span-full">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-lg font-semibold mb-4">
-                            Employee Attendances
-                        </h2>
-                        <div className="flex items-center justify-end w-[50%] gap-4">
-                            <ActionButton
-                                type="button"
-                                color="blue"
-                                onClick={() =>
-                                    router.visit(
-                                        route("dashboard", {
-                                            chart:
-                                                chart_type === "month"
-                                                    ? "day"
-                                                    : "month",
-                                        })
-                                    )
-                                }
-                            >
-                                {chart_type === "month"
-                                    ? "Switch To Day View"
-                                    : "Switch To Month View"}
-                            </ActionButton>
-
-                            <small>{new Date().toLocaleDateString()}</small>
-                        </div>
-                    </div>
-                    <canvas ref={chartRef} height="100"></canvas>
-                </div>
+                {/* Attendance Chart */}
+                <AttendanceChart
+                    attendances={attendances}
+                    chart_type={chart_type}
+                />
 
                 {/* Second row: Leave requests + Tasks + Events */}
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

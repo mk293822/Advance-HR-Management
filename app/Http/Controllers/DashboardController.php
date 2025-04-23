@@ -28,7 +28,14 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         // Pending Tasks
-        $pending_approvals = LeaveRequest::where('status', ApprovingEnum::PENDING->value);
+        $pending_leave_requests = LeaveRequest::where('status', ApprovingEnum::PENDING->value);
+        $pending_employees = User::where('status', ApprovingEnum::PENDING->value);
+        $pending_departments = Department::where('status', ApprovingEnum::PENDING->value);
+        $pending_approvals = [
+            'leave_requests_count' => $pending_leave_requests->count(),
+            'employees_count' => $pending_employees->count(),
+            'departments_count' => $pending_departments->count(),
+        ];
 
         // Recent Leave Requests
         $leave_requests = LeaveRequest::whereYear('start_date', now()->year)
@@ -79,7 +86,7 @@ class DashboardController extends Controller
             'employee_count' => User::count(),
             'department_count' => Department::count(),
             'leave_request_count' => LeaveRequest::count(),
-            'pending_approval_count' => $pending_approvals->count(),
+            'pending_approvals' => $pending_approvals,
             'leave_requests' => $leave_requests,
             'upcoming_events' => $upcoming_events,
             'attendances' => $attendances,
