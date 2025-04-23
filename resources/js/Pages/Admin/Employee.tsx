@@ -1,6 +1,7 @@
 import ActionButton from "@/Components/ActionButton";
 import CreateEmployee from "@/Components/Employee/CreateEmployee";
 import EmployeeModal from "@/Components/Employee/EmployeeModal";
+import ErrorShowModal from "@/Components/ErrorShowModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Employee, EmployeeProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
@@ -23,6 +24,9 @@ const index = ({
     const [showEditEmployee, setShowEditEmployee] = useState(false);
     const [localEmployees, setLocalEmployees] =
         useState<Employee[]>(all_employees);
+
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     // Search box
     const [searchQuery, setSearchQuery] = useState("");
@@ -74,7 +78,12 @@ const index = ({
                 setSelectedEmployee(null);
             })
             .catch((err) => {
-                console.error(err);
+                setErrorMessage(err.response.data);
+                setSelectedEmployee(null);
+                setShowErrorModal(true);
+                setShowEditEmployee(false);
+                setShowCreateEmployee(false);
+                setShowEmployeeModal(false);
             });
     };
 
@@ -100,7 +109,12 @@ const index = ({
                 }
             })
             .catch((err) => {
-                console.error(err);
+                setErrorMessage(err.response.data);
+                setSelectedEmployee(null);
+                setShowErrorModal(true);
+                setShowEditEmployee(false);
+                setShowCreateEmployee(false);
+                setShowEmployeeModal(false);
             });
     };
 
@@ -251,6 +265,13 @@ const index = ({
                 departments={all_departments}
                 positions={all_positions}
                 roles={all_roles}
+            />
+
+            {/* Error */}
+            <ErrorShowModal
+                show={showErrorModal}
+                message={errorMessage}
+                onClose={() => setShowErrorModal(false)}
             />
         </AdminLayout>
     );

@@ -7,6 +7,8 @@ import ActionButton from "@/Components/ActionButton";
 import CreateEvent from "@/Components/UpcomingEvent/CreateEvent";
 import axios from "axios";
 import AttendanceChart from "@/Components/Parts/AttendanceChart";
+import ErrorShowModal from "@/Components/ErrorShowModal";
+import { error } from "console";
 
 export default function Dashboard({
     employee_count,
@@ -56,6 +58,8 @@ export default function Dashboard({
     const [localUpcomingEvents, setLocalUpcomingEvents] =
         useState<UpcomingEvent[]>(upcoming_events);
     const [isEditEvent, setIsEditEvent] = useState(false);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     // cards
     const cards: Array<{ title: string; count: number; color: string }> = [
@@ -121,7 +125,12 @@ export default function Dashboard({
                 setSelectedEvent(null);
             })
             .catch((err) => {
-                console.error(err);
+                setErrorMessage(err.response.data);
+                setSelectedEvent(null);
+                setShowErrorModal(true);
+                setIsEditEvent(false);
+                setOpenCreateEventModal(false);
+                setOpenUpcomingEventModal(false);
             });
     };
 
@@ -149,7 +158,12 @@ export default function Dashboard({
                     }
                 })
                 .catch((err) => {
-                    console.error(err);
+                    setErrorMessage(err.response.data);
+                    setSelectedEvent(null);
+                    setShowErrorModal(true);
+                    setIsEditEvent(false);
+                    setOpenCreateEventModal(false);
+                    setOpenUpcomingEventModal(false);
                 });
         }
     };
@@ -312,6 +326,13 @@ export default function Dashboard({
                 onCreate={(data) => handleCreateEvent(data)}
                 editData={selectedEvent}
                 isEdit={isEditEvent}
+            />
+
+            {/* Error */}
+            <ErrorShowModal
+                show={showErrorModal}
+                message={errorMessage}
+                onClose={() => setShowErrorModal(false)}
             />
         </AdminLayout>
     );

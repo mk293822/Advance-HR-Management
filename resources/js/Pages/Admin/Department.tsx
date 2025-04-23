@@ -1,6 +1,7 @@
 import ActionButton from "@/Components/ActionButton";
 import CreateDepartment from "@/Components/Department/CreateDepartment";
 import DepartmentModal from "@/Components/Department/DepartmentModal";
+import ErrorShowModal from "@/Components/ErrorShowModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Department, DepartmentProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
@@ -21,6 +22,8 @@ export default function DepartmentsPage({
     const [isEdit, setIsEdit] = useState(false);
     const [localDepartments, setLocalDepartments] =
         useState<Department[]>(departments);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     // Search box
     const [searchQuery, setSearchQuery] = useState("");
@@ -85,7 +88,12 @@ export default function DepartmentsPage({
                 setSelectedDepartment(null);
             })
             .catch((err) => {
-                console.error(err);
+                setErrorMessage(err.response.data);
+                setShowErrorModal(true);
+                setIsEdit(false);
+                setSelectedDepartment(null);
+                setShowCreateDepartmentModal(false);
+                setShowModal(false);
             });
     };
 
@@ -111,7 +119,12 @@ export default function DepartmentsPage({
                 }
             })
             .catch((err) => {
-                console.error(err);
+                setErrorMessage(err.response.data);
+                setShowErrorModal(true);
+                setIsEdit(false);
+                setSelectedDepartment(null);
+                setShowCreateDepartmentModal(false);
+                setShowModal(false);
             });
     };
 
@@ -254,6 +267,13 @@ export default function DepartmentsPage({
                 editData={selectedDepartment}
                 users={users}
                 header_ids={header_ids}
+            />
+
+            {/* Error Modal */}
+            <ErrorShowModal
+                show={showErrorModal}
+                message={errorMessage}
+                onClose={() => setShowErrorModal(false)}
             />
         </AdminLayout>
     );

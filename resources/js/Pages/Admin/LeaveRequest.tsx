@@ -1,3 +1,4 @@
+import ErrorShowModal from "@/Components/ErrorShowModal";
 import LeaveRequestModal from "@/Components/LeaveRequest/LeaveRequestModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { LeaveRequest, LeaveRequestProps } from "@/types/Admin";
@@ -15,6 +16,9 @@ export default function LeaveRequestsPage({
     const [localLeaveRequests, setLocalLeaveRequests] =
         useState<LeaveRequest[]>(leave_requests);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     // Search box
     const [searchQuery, setSearchQuery] = useState("");
@@ -56,7 +60,12 @@ export default function LeaveRequestsPage({
                     );
                 }
             })
-            .catch((err) => console.log(err));
+            .catch((err) => {
+                setErrorMessage(err.response.data);
+                setSelectedLeave(null);
+                setShowErrorModal(true);
+                setIsModalOpen(false);
+            });
     };
 
     return (
@@ -213,6 +222,13 @@ export default function LeaveRequestsPage({
                     }}
                 />
             )}
+
+            {/* Error */}
+            <ErrorShowModal
+                show={showErrorModal}
+                message={errorMessage}
+                onClose={() => setShowErrorModal(false)}
+            />
         </AdminLayout>
     );
 }
