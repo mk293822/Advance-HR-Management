@@ -35,7 +35,7 @@ class AttendanceFactory extends Factory
         }
 
         return [
-            'date' => $this->faker->date(),
+            'date' => $this->faker->dateTimeBetween('2024-01-01', '2025-4-31')->format('Y-m-d'),
             'status' => $status,
             'check_in' => $check_in,
             'check_out' => $check_out,

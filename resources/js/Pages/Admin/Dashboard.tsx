@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import Chart from "chart.js/auto";
 import { DashboardProps, LeaveRequest, UpcomingEvent } from "@/types/Admin";
 import AdminLayout from "@/Layouts/AdminLayout";
@@ -7,7 +7,6 @@ import UpcomingEventModal from "@/Components/UpcomingEvent/UpcomingEventModal";
 import ActionButton from "@/Components/ActionButton";
 import CreateEvent from "@/Components/UpcomingEvent/CreateEvent";
 import axios from "axios";
-import { type } from "os";
 
 export default function Dashboard({
     employee_count,
@@ -16,6 +15,8 @@ export default function Dashboard({
     pending_approval_count,
     leave_requests,
     upcoming_events,
+    attendances,
+    chart_type,
 }: DashboardProps) {
     const chartRef = useRef(null);
 
@@ -36,25 +37,19 @@ export default function Dashboard({
             : []
     );
 
-    console.log(pendingTasks);
-
-    const [leaveRequests, setLeaveRequests] = useState<Array<LeaveRequest>>(
-        leave_requests
-            .map((request) => ({
-                ...request,
-                date: `${new Date(
-                    request.start_date
-                ).toLocaleDateString()} - ${new Date(
-                    request.end_date
-                ).toLocaleDateString()}`,
-            }))
-            .sort(
-                (a, b) =>
-                    new Date(b.start_date).getTime() -
-                    new Date(a.start_date).getTime()
-            )
-            .slice(0, 10) // Sort by latest start_date first
+    const [leaveRequests, setLeaveRequests] = useState<
+        Array<LeaveRequest & { date: string }>
+    >(
+        leave_requests.map((request) => ({
+            ...request,
+            date: `${new Date(
+                request.start_date
+            ).toLocaleDateString()} - ${new Date(
+                request.end_date
+            ).toLocaleDateString()}`,
+        }))
     );
+
     const [openUpcomingEventModal, setOpenUpcomingEventModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<UpcomingEvent | null>(
         null
@@ -64,66 +59,153 @@ export default function Dashboard({
         useState<UpcomingEvent[]>(upcoming_events);
     const [isEditEvent, setIsEditEvent] = useState(false);
 
-    // Chart Setup
+    // Chart
     useEffect(() => {
         let chartInstance: Chart | null = null;
 
-        let monthlyData = Array.from({ length: 12 }, () => ({
-            leaves: 0,
-            approved: 0,
-            rejected: 0,
-        }));
-        leave_requests.forEach((request) => {
-            const date = new Date(request.start_date);
-            const month = date.getMonth();
-            const year = date.getFullYear();
-            const status = request.status;
-            if (year === new Date().getFullYear()) {
-                monthlyData[month].leaves += 1;
-                if (status === "approved") {
-                    monthlyData[month].approved += 1;
-                } else if (status === "rejected") {
-                    monthlyData[month].rejected += 1;
+        let labels: string[] = [];
+        let presentData: number[] = [];
+        let absentData: number[] = [];
+        let halfDayData: number[] = [];
+
+        if (chart_type === "month") {
+            // Generate monthly data
+            const monthlyData: Array<{
+                present: number;
+                absent: number;
+                late: number;
+                leave: number;
+                half_day: number;
+            }> = Array.from({ length: 12 }, () => ({
+                present: 0,
+                absent: 0,
+                half_day: 0,
+                leave: 0,
+                late: 0,
+            }));
+
+            attendances.forEach((attendance) => {
+                const date = new Date(attendance.date);
+                const month = date.getMonth();
+                const year = date.getFullYear();
+                const status = attendance.status;
+
+                if (year === new Date().getFullYear()) {
+                    if (status in monthlyData[month]) {
+                        monthlyData[month][
+                            status as keyof (typeof monthlyData)[number]
+                        ] += 1;
+                    }
                 }
-            }
-        });
-        const leavesData = monthlyData.map((data) => data.leaves);
-        const approvedData = monthlyData.map((data) => data.approved);
-        const rejectedData = monthlyData.map((data) => data.rejected);
+            });
+
+            const currentMonth = new Date().getMonth();
+            labels = [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
+            ];
+
+            presentData = monthlyData.map((m, i) =>
+                i <= currentMonth ? m.present + m.late : 0
+            );
+            absentData = monthlyData.map((m, i) =>
+                i <= currentMonth ? m.absent + m.leave : 0
+            );
+            halfDayData = monthlyData.map((m, i) =>
+                i <= currentMonth ? m.half_day : 0
+            );
+        } else {
+            // Generate daily data for current month
+            const daysInMonth = new Date(
+                new Date().getFullYear(),
+                new Date().getMonth() + 1,
+                0
+            ).getDate();
+
+            const dailyData = Array.from({ length: daysInMonth }, () => ({
+                present: 0,
+                absent: 0,
+                half_day: 0,
+                leave: 0,
+                late: 0,
+            }));
+
+            attendances.forEach((attendance) => {
+                const date = new Date(attendance.date);
+                const day = date.getDate();
+                const month = date.getMonth();
+                const year = date.getFullYear();
+
+                if (
+                    month === new Date().getMonth() &&
+                    year === new Date().getFullYear()
+                ) {
+                    if (attendance.status in dailyData[day - 1]) {
+                        dailyData[day - 1][
+                            attendance.status as keyof (typeof dailyData)[number]
+                        ] += 1;
+                    }
+                }
+            });
+
+            labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
+
+            presentData = dailyData.map((m) => m.present + m.late);
+            absentData = dailyData.map((m) => m.absent + m.leave);
+            halfDayData = dailyData.map((m) => m.half_day);
+        }
 
         if (chartRef.current) {
             chartInstance = new Chart(chartRef.current, {
-                type: "bar",
+                type: "line",
                 data: {
-                    labels: [
-                        "Jan",
-                        "Feb",
-                        "Mar",
-                        "Apr",
-                        "May",
-                        "Jun",
-                        "Jul",
-                        "Aug",
-                        "Sep",
-                        "Oct",
-                        "Nov",
-                        "Dec",
-                    ],
+                    labels,
                     datasets: [
                         {
-                            label: "Leaves",
-                            data: leavesData,
-                            backgroundColor: "#3b82f6", // Blue
+                            label: "Present",
+                            data: presentData,
+                            borderColor: "#16a34a", // Emerald Green
+                            pointBackgroundColor: "#16a34a",
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0,
+                            spanGaps: true,
+                            pointRadius: 3,
+                            backgroundColor: "#16a34a",
                         },
                         {
-                            label: "Approved",
-                            data: approvedData,
-                            backgroundColor: "#34d399", // Green
+                            label: "Absent",
+                            data: absentData,
+                            borderColor: "#dc2626", // Strong Red
+                            pointBackgroundColor: "#dc2626",
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0,
+                            spanGaps: true,
+                            pointRadius: 3,
+                            backgroundColor: "#dc2626",
                         },
                         {
-                            label: "Rejected",
-                            data: rejectedData,
-                            backgroundColor: "#f87171", // Red
+                            label: "Half Day",
+                            data: halfDayData,
+                            borderColor: "#7c3aed", // Vivid Purple
+                            pointBackgroundColor: "#7c3aed",
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0,
+                            spanGaps: true,
+                            pointRadius: 3,
+                            backgroundColor: "#7c3aed",
                         },
                     ],
                 },
@@ -141,7 +223,7 @@ export default function Dashboard({
         return () => {
             chartInstance?.destroy();
         };
-    }, []);
+    }, [attendances, chart_type]);
 
     // cards
     const cards: Array<{ title: string; count: number; color: string }> = [
@@ -265,9 +347,30 @@ export default function Dashboard({
                 <div className="bg-gray-800 p-6 hidden md:block rounded-lg shadow col-span-full">
                     <div className="flex justify-between items-center">
                         <h2 className="text-lg font-semibold mb-4">
-                            Employee Leave Status
+                            Employee Attendances
                         </h2>
-                        <small>{new Date().toLocaleDateString()}</small>
+                        <div className="flex items-center justify-end w-[50%] gap-4">
+                            <ActionButton
+                                type="button"
+                                color="blue"
+                                onClick={() =>
+                                    router.visit(
+                                        route("dashboard", {
+                                            chart:
+                                                chart_type === "month"
+                                                    ? "day"
+                                                    : "month",
+                                        })
+                                    )
+                                }
+                            >
+                                {chart_type === "month"
+                                    ? "Switch To Day View"
+                                    : "Switch To Month View"}
+                            </ActionButton>
+
+                            <small>{new Date().toLocaleDateString()}</small>
+                        </div>
                     </div>
                     <canvas ref={chartRef} height="100"></canvas>
                 </div>
@@ -280,12 +383,13 @@ export default function Dashboard({
                             Recent Leave Requests
                         </h2>
                         <ul className="space-y-3 text-sm text-gray-400">
-                            {leaveRequests.map((req) => (
+                            {leaveRequests.map((req, index) => (
                                 <li
-                                    key={req.id}
+                                    key={index}
                                     className="flex justify-between items-center"
                                 >
                                     <span>{req.employee_name}</span>
+                                    <span>{req.date}</span>
                                     <span
                                         className={`px-2 py-1 font-semibold text-white rounded-full text-xs ${
                                             req.status === "approved"

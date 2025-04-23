@@ -9,6 +9,7 @@ use App\Models\LeaveRequest;
 use App\Models\Position;
 use App\Models\UpcomingEvents;
 use App\Models\User;
+use Database\Factories\AttendanceFactory;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
@@ -79,7 +80,7 @@ class DatabaseSeeder extends Seeder
             'role_id' => Role::where('name', 'Admin')->first()->id,
         ]);
 
-        $user = User::factory(50)->create();
+        $user = User::factory(10)->create();
 
         $employee_ids = User::inRandomOrder()
             ->limit(count($departmentNames))
@@ -94,10 +95,7 @@ class DatabaseSeeder extends Seeder
 
         UpcomingEvents::factory(20)->create();
 
-        Attendance::factory(10)
-            ->count(count($user))
-            ->sequence(fn($sequence) => ["user_id" => $user[$sequence->index]->id])
-            ->create();
+        $this->call(AttendanceSeeder::class);
 
         LeaveRequest::factory(20)->create();
     }

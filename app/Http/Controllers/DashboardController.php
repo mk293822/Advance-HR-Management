@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ApprovingEnum;
+use App\Http\Resources\AttendanceResource;
 use App\Http\Resources\LeaveRequestResource;
 use App\Http\Resources\UpcomingEventResource;
+use App\Models\Attendance;
 use App\Models\Department;
 use App\Models\LeaveRequest;
 use App\Models\UpcomingEvents;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -24,9 +27,53 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
+        // Pending Tasks
         $pending_approvals = LeaveRequest::where('status', ApprovingEnum::PENDING->value);
-        $leave_requests = LeaveRequestResource::collection(LeaveRequest::orderByDesc('start_date')->get())->toArray($request);
+
+        // Recent Leave Requests
+        $leave_requests = LeaveRequest::whereYear('start_date', now()->year)
+            ->whereMonth('start_date', now()->month)
+            ->orderByDesc('start_date')
+            ->limit(10)
+            ->get()
+            ->map(function ($req) {
+                return [
+                    'employee_name' => $req->user->name,
+                    'status' => $req->status,
+                    'start_date' => $req->start_date,
+                    'end_date' => $req->end_date,
+                ];
+            })
+            ->toArray();
+
+
+        // Upcoming Events
         $upcoming_events = UpcomingEventResource::collection(UpcomingEvents::orderBy('start_date')->get())->toArray($request);
+
+        // Attendance tracking
+        $all_attendances = Attendance::whereYear('date', now()->year)
+            ->orderByDesc('date')
+            ->get();
+
+        $chart_type = $request->query('chart', 'day');
+        $attendances = [];
+
+        if ($chart_type === 'day') {
+            $attendances = $all_attendances->whereBetween('date', [
+                now()->startOfMonth()->toDateString(),
+                now()->endOfMonth()->toDateString()
+            ]);
+        } elseif ($chart_type === 'month') {
+            $attendances = $all_attendances;
+        }
+
+        $attendances = collect($attendances)->map(function ($att) {
+            return [
+                'status' => $att->status,
+                'date' => $att->date
+            ];
+        })->toArray();
+
 
         return Inertia::render("Admin/Dashboard", [
             'employee_count' => User::count(),
@@ -35,6 +82,8 @@ class DashboardController extends Controller
             'pending_approval_count' => $pending_approvals->count(),
             'leave_requests' => $leave_requests,
             'upcoming_events' => $upcoming_events,
+            'attendances' => $attendances,
+            'chart_type' => $chart_type
         ]);
     }
 

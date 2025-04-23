@@ -9,6 +9,16 @@ export type DashboardProps = {
     pending_approval_count: number;
     upcoming_events: UpcomingEvent[];
     leave_requests: LeaveRequest[];
+    attendances: AttendanceProps[];
+    chart_type: "day" | "month";
+};
+
+// Attendances types
+export type AttendanceProps = {
+    id: number;
+    employee_id: string;
+    status: string;
+    date: string;
 };
 
 // Upcoming Event types for the admin dashboard
