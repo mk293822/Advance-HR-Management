@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ApprovingEnum;
 use App\Http\Resources\LeaveRequestResource;
+use App\Jobs\LeaveRequestAutomation;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,6 +30,7 @@ class LeaveRequestController extends Controller
         $leaveRequest = LeaveRequest::findOrFail($id);
         $leaveRequest->update(['status' => $request->get('type') === "approve" ? ApprovingEnum::APPROVED->value : ApprovingEnum::REJECTED->value]);
 
+        LeaveRequestAutomation::dispatch();
         return response()->json([
             'status' => 'success',
             'data' => (new LeaveRequestResource($leaveRequest))->toArray($request),
