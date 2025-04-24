@@ -1,5 +1,4 @@
 import { CalendarIcon, ClipboardIcon } from "@heroicons/react/24/outline";
-import NavLink from "../NavLink";
 import {
     HomeIcon,
     UsersIcon,
@@ -8,7 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { Link } from "@inertiajs/react";
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen }: { isOpen?: boolean }) => {
     const items = [
         {
             name: "Dashboard",
@@ -43,7 +42,11 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="w-60 h-[calc(100vh-4rem)] pt-2 bg-gray-900 border-r border-gray-700 shadow-md hidden lg:flex flex-col">
+        <aside
+            className={`w-60 h-[calc(100vh-4rem)] pt-2 bg-gray-900 lg:border-r lg:border-gray-700 shadow-md flex-col transition-transform duration-300 z-50
+            ${isOpen ? "fixed top-16 left-0 flex w-full" : "hidden"}
+            lg:flex lg:static`}
+        >
             <nav className="flex-1 overflow-y-auto">
                 <ul className="space-y-1 px-2">
                     {items.map((item) => {
