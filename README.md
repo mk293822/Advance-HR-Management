@@ -2,16 +2,26 @@
 
 A modern **Human Resource Management System** built with **Laravel 11** (API backend) and **React + TypeScript** (frontend). This system allows HR teams to manage employees, departments, roles, and leave requests efficiently.
 
+---
+
+![Laravel](https://img.shields.io/badge/Laravel-11-red?logo=laravel)
+![React](https://img.shields.io/badge/React-TypeScript-61DAFB?logo=react)
+![License](https://img.shields.io/badge/License-MIT-blue)
+![Status](https://img.shields.io/badge/status-active-success)
+
+---
+
 ## 🚀 Features
 
--   🔐 User authentication (Laravel Sanctum)
--   👤 Employee management (Create, Edit, Delete, View)
--   🏢 Department management with Heads & Participants
+-   🔐 Secure user authentication (Laravel Sanctum)
+-   👤 Full employee CRUD management
+-   🏢 Department creation with Heads & Participants
 -   📅 Leave request and approval system
--   📊 HR dashboard for insights
--   🧑‍⚖️ Role & permission system (planned)
--   🧾 Audit trails and activity logs _(planned)_
--   🔍 Filter, search, and pagination for large data
+-   📊 Interactive HR dashboard for insights
+-   🔍 Advanced search with Fuse.js
+-   🌈 Fully styled with Tailwind CSS & daisyUI
+-   🧑‍⚖️ Role & permission system _(planned)_
+-   🧾 Audit logs and activity history _(planned)_
 
 ---
 
@@ -28,9 +38,12 @@ A modern **Human Resource Management System** built with **Laravel 11** (API bac
 ### 🎨 Frontend
 
 -   [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
--   Tailwind CSS
--   Headless UI (Combobox, Modal, etc.)
--   Axios for API requests
+-   [Tailwind CSS](https://tailwindcss.com/)
+-   [daisyUI](https://daisyui.com/) (Tailwind component library)
+-   [Heroicons](https://heroicons.com/) (for beautiful icons)
+-   [clsx](https://github.com/lukeed/clsx) (for conditional classNames)
+-   [fuse.js](https://fusejs.io/) (for fuzzy search functionality)
+-   Axios for API communication
 -   Zustand or Context API for state management (if used)
 
 ---
@@ -52,16 +65,14 @@ A modern **Human Resource Management System** built with **Laravel 11** (API bac
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/your-username/hr-management.git
-cd hr-management
+git clone https://github.com/mk293822/Advance-HR-Management.git
+cd Advance-HR-Management
 ```
 
-2. **Install dependencies**
+2. **Install backend dependencies**
 
 ```bash
 composer install
-npm install
-npm run build
 ```
 
 3. **Copy and setup environment**
@@ -73,13 +84,25 @@ php artisan key:generate
 
 4. **Configure database in .env**
 
+### DB_DATABASE=hr_db
+
+### DB_USERNAME=root
+
+### DB_PASSWORD=secret
+
 5. **Then run**
 
 ```bash
 php artisan migrate --seed
 ```
 
-6. **Start The Project**
+6. **Install frontend dependencies**
+
+```bash
+npm install
+```
+
+7. **Start The Project**
 
 ```bash
 npm run dev
