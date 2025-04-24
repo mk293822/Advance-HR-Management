@@ -84,11 +84,11 @@ php artisan key:generate
 
 4. **Configure database in .env**
 
-### DB_DATABASE=hr_db
-
-### DB_USERNAME=root
-
-### DB_PASSWORD=secret
+```bash
+DB_DATABASE=hr_db
+DB_USERNAME=root
+DB_PASSWORD=secret
+```
 
 5. **Then run**
 
