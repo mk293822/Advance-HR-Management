@@ -11,12 +11,23 @@ import {
 import Fuse from "fuse.js";
 import ActionButton from "../ActionButton";
 
+interface formProps {
+    name: string;
+    description: string | null;
+    header_id: string;
+    status: Status | string; // Use string literal union if status is fixed
+    participants: Array<{
+        full_name: string;
+        employee_id: string;
+    }>;
+}
+
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (data: Department) => void;
+    onCreate: (data: formProps) => void;
     isEdit: boolean;
-    editData: Department | null;
+    toeditData: Department | null;
     users: Array<{
         employee_id: string;
         full_name: string;
@@ -29,11 +40,11 @@ export default function CreateDepartment({
     onClose,
     onCreate,
     isEdit,
-    editData,
+    toeditData,
     users,
     header_ids,
 }: Props) {
-    const initialForm: Department = {
+    const initialForm: formProps = {
         name: "",
         header_id: "",
         description: "",
@@ -41,7 +52,14 @@ export default function CreateDepartment({
         participants: [],
     };
 
-    const [form, setForm] = useState<Department>(initialForm);
+    const [editData] = useState<formProps>({
+        name: toeditData?.name ?? "",
+        header_id: toeditData?.header?.employee_id ?? "",
+        description: toeditData?.description ?? "",
+        status: toeditData?.status ?? "",
+        participants: toeditData?.participants ?? [],
+    });
+    const [form, setForm] = useState<formProps>(initialForm);
     const [showParticipantModal, setShowParticipantModal] = useState(false);
 
     const [query, setQuery] = useState("");

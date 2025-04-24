@@ -337,7 +337,12 @@ export default function Dashboard({
             {/* Creating Event Modal */}
             <CreateEvent
                 isOpen={openCreateEventModal}
-                onClose={() => setOpenCreateEventModal(false)}
+                onClose={() => {
+                    setOpenCreateEventModal(false);
+                    setSelectedEvent(null);
+                    setOpenUpcomingEventModal(false);
+                    setIsEditEvent(false);
+                }}
                 onCreate={(data) => handleCreateEvent(data)}
                 editData={selectedEvent}
                 isEdit={isEditEvent}

@@ -4,10 +4,22 @@ import DepartmentModal from "@/Components/Department/DepartmentModal";
 import ErrorShowModal from "@/Components/ErrorShowModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Department, DepartmentProps } from "@/types/Admin";
+import { Status } from "@/types/Enums";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
+
+interface formProps {
+    name: string;
+    description: string | null;
+    header_id: string;
+    status: Status | string; // Use string literal union if status is fixed
+    participants: Array<{
+        full_name: string;
+        employee_id: string;
+    }>;
+}
 
 export default function DepartmentsPage({
     departments,
@@ -54,7 +66,7 @@ export default function DepartmentsPage({
     };
 
     // Handle Department Create and Edit
-    const handleDepartmentCreate = (data: Department) => {
+    const handleDepartmentCreate = (data: formProps) => {
         const request = isEdit
             ? axios.put(
                   route("departments.update", selectedDepartment?.id),
@@ -255,7 +267,10 @@ export default function DepartmentsPage({
             {selectedDepartment && (
                 <DepartmentModal
                     show={showModal}
-                    onClose={() => setShowModal(false)}
+                    onClose={() => {
+                        setShowModal(false);
+                        setSelectedDepartment(null);
+                    }}
                     department={selectedDepartment}
                     onDelete={handleDepartmentDelete}
                     onEdit={handleDepartmentEdit}
@@ -268,10 +283,12 @@ export default function DepartmentsPage({
                 onClose={() => {
                     setShowCreateDepartmentModal(false);
                     setIsEdit(false);
+                    setShowModal(false);
+                    setSelectedDepartment(null);
                 }}
                 onCreate={handleDepartmentCreate}
                 isEdit={isEdit}
-                editData={selectedDepartment}
+                toeditData={selectedDepartment}
                 users={users}
                 header_ids={header_ids}
             />

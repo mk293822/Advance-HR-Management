@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
@@ -29,6 +30,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         'store' => 'employees.store',
         'update' => 'employees.update',
         'destroy' => 'employees.destroy',
+    ]);
+
+    // Employee Management Routes
+    Route::apiResource('attendances', AttendanceController::class)->only([
+        'index',
+        'store',
+        'update',
+        'destroy'
+    ])->names([
+        'index' => 'attendances',
+        'store' => 'attendances.store',
+        'update' => 'attendances.update',
+        'destroy' => 'attendances.destroy',
     ]);
 
     // Leave Request Management Routes

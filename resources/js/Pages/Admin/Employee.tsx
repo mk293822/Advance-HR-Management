@@ -261,7 +261,10 @@ const index = ({
             <EmployeeModal
                 show={showEmployeeModal}
                 employee={selectedEmployee}
-                onClose={() => setShowEmployeeModal(false)}
+                onClose={() => {
+                    setShowEmployeeModal(false);
+                    setSelectedEmployee(null);
+                }}
                 onDelete={handleDeleteEmployee}
                 onEdit={handleEditEmployee}
             />
@@ -270,6 +273,8 @@ const index = ({
                 onClose={() => {
                     setShowCreateEmployee(false);
                     setShowEditEmployee(false);
+                    setSelectedEmployee(null);
+                    setShowEmployeeModal(false);
                 }}
                 onCreate={(data) => handleCreateEmployee(data)}
                 editData={selectedEmployee}

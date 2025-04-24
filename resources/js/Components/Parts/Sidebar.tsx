@@ -1,4 +1,4 @@
-import { ClipboardIcon } from "@heroicons/react/24/outline";
+import { CalendarIcon, ClipboardIcon } from "@heroicons/react/24/outline";
 import NavLink from "../NavLink";
 import {
     HomeIcon,
@@ -6,9 +6,10 @@ import {
     BuildingOfficeIcon,
     CogIcon,
 } from "@heroicons/react/24/outline";
+import { Link } from "@inertiajs/react";
 
 const Sidebar = () => {
-    const parts = [
+    const items = [
         {
             name: "Dashboard",
             icon: <HomeIcon className="w-5 h-5 mr-2" />,
@@ -25,6 +26,11 @@ const Sidebar = () => {
             route: "departments",
         },
         {
+            name: "Attendances Tracking",
+            icon: <CalendarIcon className="w-5 h-5 mr-2" />,
+            route: "attendances",
+        },
+        {
             name: "Leave Requests",
             icon: <ClipboardIcon className="w-5 h-5 mr-2" />,
             route: "leaveRequests",
@@ -37,21 +43,38 @@ const Sidebar = () => {
     ];
 
     return (
-        <aside className="w-48 h-[calc(100vh-4rem)] border-r-gray-600 border-r shadow-md hidden lg:block">
-            <nav className="flex flex-col justify-start">
-                {/* Sidebar links */}
-                {parts.map((item) => (
-                    <NavLink
-                        key={item.name}
-                        active={route().current(item.route)}
-                        href={route(item.route)}
-                        className="flex items-center justify-end text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-gray-700"
-                    >
-                        {item.icon}
-                        {item.name}
-                    </NavLink>
-                ))}
+        <aside className="w-60 h-[calc(100vh-4rem)] pt-2 bg-gray-900 border-r border-gray-700 shadow-md hidden lg:flex flex-col">
+            <nav className="flex-1 overflow-y-auto">
+                <ul className="space-y-1 px-2">
+                    {items.map((item) => {
+                        const isActive = route().current(item.route);
+                        return (
+                            <li key={item.name}>
+                                <Link
+                                    href={route(item.route)}
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-150 ${
+                                        isActive
+                                            ? "bg-blue-600 text-white"
+                                            : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                                    }`}
+                                >
+                                    {item.icon && (
+                                        <span className="text-xl">
+                                            {item.icon}
+                                        </span>
+                                    )}
+                                    <span className="text-sm font-medium">
+                                        {item.name}
+                                    </span>
+                                </Link>
+                            </li>
+                        );
+                    })}
+                </ul>
             </nav>
+            <div className="px-4 py-4 text-sm text-gray-500 border-t border-gray-700">
+                &copy; 2025 HRM. All rights reserved.
+            </div>
         </aside>
     );
 };

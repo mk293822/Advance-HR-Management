@@ -212,7 +212,10 @@ export default function LeaveRequestsPage({
                 <LeaveRequestModal
                     leave={selectedLeave}
                     isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
+                    onClose={() => {
+                        setIsModalOpen(false);
+                        setSelectedLeave(null);
+                    }}
                     onApprove={() => {
                         // Handle approve action
                         setIsModalOpen(false);

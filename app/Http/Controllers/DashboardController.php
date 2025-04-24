@@ -45,7 +45,7 @@ class DashboardController extends Controller
             ->get()
             ->map(function ($req) {
                 return [
-                    'employee_name' => $req->user->name,
+                    'employee_name' => $req->user->first_name . " " . $req->user->last_name,
                     'status' => $req->status,
                     'start_date' => $req->start_date,
                     'end_date' => $req->end_date,

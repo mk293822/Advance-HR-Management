@@ -9,6 +9,14 @@ export enum Role {
     INTERN = "intern",
 }
 
+export enum AttendanceEnum {
+    PRESENT = "present",
+    ABSENT = "absent",
+    LEAVE = "leave",
+    LATE = "late",
+    HALF_DAY = "half_day",
+}
+
 // PositionEnum.ts
 export enum Position {
     SOFTWARE_ENGINEER = "Software Engineer",

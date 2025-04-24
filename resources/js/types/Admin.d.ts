@@ -22,10 +22,29 @@ export type PendingApproval = {
 
 // Attendances types
 export type AttendanceProps = {
+    attendances: AttendanceType[];
+    links: PaginateLinks[];
+};
+
+export type AttendanceType = {
     id: number;
-    employee_id: string;
+    employee: {
+        full_name: string;
+        employee_id: string;
+    };
     status: string;
     date: string;
+    check_in: string;
+    check_out: string;
+    remark: string;
+};
+
+// Pagination Links
+
+export type PaginateLinks = {
+    url: string;
+    label: string;
+    active: string;
 };
 
 // Upcoming Event types for the admin dashboard
