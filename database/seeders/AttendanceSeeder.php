@@ -19,16 +19,16 @@ class AttendanceSeeder extends Seeder
     {
 
         $startDate = Carbon::createFromDate(2025, 1, 1);
-        $endDate = Carbon::today();
+        $endDate = Carbon::createFromDate(2025, 4, 25);
         $users = User::all();
 
         // Weighted status pool: more "present", fewer others
         $statusPool = array_merge(
-            array_fill(0, 50, AttendanceEnum::PRESENT->value),
-            array_fill(0, 15, AttendanceEnum::LATE->value),
-            array_fill(0, 10, AttendanceEnum::HALF_DAY->value),
-            array_fill(0, 15, AttendanceEnum::LEAVE->value),
-            array_fill(0, 10, AttendanceEnum::ABSENT->value)
+            array_fill(0, 80, AttendanceEnum::PRESENT->value),
+            array_fill(0, 5, AttendanceEnum::LATE->value),
+            array_fill(0, 5, AttendanceEnum::HALF_DAY->value),
+            array_fill(0, 5, AttendanceEnum::LEAVE->value),
+            array_fill(0, 5, AttendanceEnum::ABSENT->value)
         );
 
         foreach ($users as $user) {

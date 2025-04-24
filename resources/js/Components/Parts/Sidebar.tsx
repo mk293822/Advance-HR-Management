@@ -52,11 +52,16 @@ const Sidebar = () => {
                             <li key={item.name}>
                                 <Link
                                     href={route(item.route)}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-150 ${
+                                    className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-colors duration-150 ${
                                         isActive
                                             ? "bg-blue-600 text-white"
                                             : "text-gray-300 hover:bg-gray-700 hover:text-white"
                                     }`}
+                                    onClick={(e) => {
+                                        if (isActive) {
+                                            e.preventDefault(); // prevent page reload
+                                        }
+                                    }}
                                 >
                                     {item.icon && (
                                         <span className="text-xl">

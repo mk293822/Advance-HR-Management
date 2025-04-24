@@ -38,7 +38,9 @@ export default function Dashboard({
     ].filter((item) => item.count > 0);
 
     const [pendingTasks, setPendingTasks] =
-        useState<Array<{ value: string; type: string }>>(pendingItems);
+        useState<Array<{ value: string; type: string; count: number }>>(
+            pendingItems
+        );
 
     const [leaveRequests, setLeaveRequests] = useState<
         Array<LeaveRequest & { date: string }>
@@ -91,7 +93,8 @@ export default function Dashboard({
             title: "Pending Approvals",
             count:
                 pending_approvals.employees_count +
-                pending_approvals.leave_requests_count,
+                pending_approvals.leave_requests_count +
+                pending_approvals.departments_count,
             color: "border-l-red-500",
         },
     ];
@@ -281,7 +284,7 @@ export default function Dashboard({
                         </ActionButton>
                     </div>
 
-                    <ul className="text-sm text-gray-300 max-h-64 overflow-y-auto divide-y divide-gray-700">
+                    <ul className="text-sm text-gray-300 max-h-80 overflow-y-auto divide-y divide-gray-700">
                         {localUpcomingEvents.map(
                             (event, index) =>
                                 event.start_date > new Date().toISOString() && (

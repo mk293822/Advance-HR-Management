@@ -86,7 +86,7 @@ const Attendance = ({ attendances, links }: AttendanceProps) => {
 
     return (
         <AdminLayout>
-            <Head title="Employee" />
+            <Head title="Attendances" />
 
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-white">Attendances</h1>

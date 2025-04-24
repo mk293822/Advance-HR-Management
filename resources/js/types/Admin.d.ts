@@ -9,7 +9,7 @@ export type DashboardProps = {
     pending_approvals: PendingApproval;
     upcoming_events: UpcomingEvent[];
     leave_requests: LeaveRequest[];
-    attendances: AttendanceProps[];
+    attendances: AttendanceType[];
     chart_type: "day" | "month";
 };
 

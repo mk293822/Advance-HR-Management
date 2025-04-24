@@ -1,7 +1,6 @@
 import Dropdown from "@/Components/Dropdown";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { FolderOpenIcon } from "@heroicons/react/24/outline";
-import { BellAlertIcon } from "@heroicons/react/24/solid";
+import { ArrowLeftIcon, BellAlertIcon } from "@heroicons/react/24/outline";
+import { FolderOpenIcon } from "@heroicons/react/24/solid";
 import { Link, usePage } from "@inertiajs/react";
 import { useState } from "react";
 

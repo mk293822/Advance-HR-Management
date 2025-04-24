@@ -2,13 +2,13 @@ import React, { useEffect, useRef } from "react";
 import ActionButton from "../ActionButton";
 import { router } from "@inertiajs/react";
 import Chart from "chart.js/auto";
-import { AttendanceProps } from "@/types/Admin";
+import { AttendanceProps, AttendanceType } from "@/types/Admin";
 
 const AttendanceChart = ({
     attendances,
     chart_type,
 }: {
-    attendances: AttendanceProps[];
+    attendances: AttendanceType[];
     chart_type: string;
 }) => {
     const chartRef = useRef(null);
@@ -38,7 +38,7 @@ const AttendanceChart = ({
                 late: 0,
             }));
 
-            attendances.forEach((attendance) => {
+            attendances.forEach((attendance, index) => {
                 const date = new Date(attendance.date);
                 const month = date.getMonth();
                 const year = date.getFullYear();
@@ -196,7 +196,11 @@ const AttendanceChart = ({
                                         chart_type === "month"
                                             ? "day"
                                             : "month",
-                                })
+                                }),
+                                {
+                                    preserveScroll: true,
+                                    preserveState: true,
+                                }
                             )
                         }
                     >
