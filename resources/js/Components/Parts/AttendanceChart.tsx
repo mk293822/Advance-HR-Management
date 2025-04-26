@@ -114,9 +114,13 @@ const AttendanceChart = ({
 
             labels = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
 
-            presentData = dailyData.map((m) => m.present + m.late);
+            presentData = dailyData
+                .map((m) => m.present + m.late)
+                .filter((data) => data > 0);
             absentData = dailyData.map((m) => m.absent + m.leave);
             halfDayData = dailyData.map((m) => m.half_day);
+
+            const today = new Date().getDate();
         }
 
         if (chartRef.current) {

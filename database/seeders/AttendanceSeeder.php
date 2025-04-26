@@ -19,7 +19,7 @@ class AttendanceSeeder extends Seeder
     {
 
         $startDate = Carbon::createFromDate(2025, 1, 1);
-        $endDate = Carbon::createFromDate(2025, 4, 25);
+        $endDate = Carbon::createFromDate(2025, 4, 24);
         $users = User::all();
 
         // Weighted status pool: more "present", fewer others

@@ -7,6 +7,7 @@ const colorClasses: Record<string, string> = {
     blue: "border-blue-500 text-blue-400 hover:bg-blue-500",
     yellow: "border-yellow-500 text-yellow-400 hover:bg-yellow-500",
     gray: "border-gray-500 text-gray-400 hover:bg-gray-500",
+    orange: "border-orange-500 text-orange-400 hover:bg-orange-500",
 };
 
 const ActionButton = React.memo(

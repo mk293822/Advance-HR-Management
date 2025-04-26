@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AttendanceController;
+use App\Http\Controllers\DailyTaskController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
@@ -18,6 +19,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post("/UpcomingEvent", [DashboardController::class, "event_store"])->name("upcomingEvent.store");
     Route::put("/UpcomingEvent/{id}", [DashboardController::class, "event_update"])->name("upcomingEvent.update");
     Route::delete("/UpcomingEvent/{id}", [DashboardController::class, "event_destroy"])->name("upcomingEvent.destroy");
+
+    // Daily Tasks
+    Route::get("/DailyTasks", [DailyTaskController::class, "index"])->name("dailyTasks");
 
     // Employee Management Routes
     Route::apiResource('employees', EmployeeController::class)->only([

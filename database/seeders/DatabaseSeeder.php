@@ -74,6 +74,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'minkhant',
             'email' => 'mkt293822@gmail.com',
             'role_id' => Role::where('name', 'Admin')->first()->id,
+            'date_of_birth' => '1998-04-26',
         ]);
 
         User::factory(10)->create();
