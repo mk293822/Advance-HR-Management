@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\RoleEnum;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\UpcomingEvents;
@@ -73,7 +74,7 @@ class DatabaseSeeder extends Seeder
         User::factory()->create([
             'name' => 'minkhant',
             'email' => 'mkt293822@gmail.com',
-            'role_id' => Role::where('name', 'Admin')->first()->id,
+            'role_id' => Role::where('name', RoleEnum::ADMIN->value)->first()->id,
             'date_of_birth' => '1998-04-26',
         ]);
 
