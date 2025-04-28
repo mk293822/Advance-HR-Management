@@ -27,7 +27,7 @@ class DailyTaskController extends Controller
             ->get())->toArray(request());
 
         // Leave requests
-        $leave_requests = LeaveRequestResource::collection(LeaveRequest::where('start_date', today())
+        $leave_requests = LeaveRequestResource::collection(LeaveRequest::where('start_date', $today)
             ->where('status', ApprovingEnum::PENDING->value)->get())->toArray($request);
 
         // Birthday users

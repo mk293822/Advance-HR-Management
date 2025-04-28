@@ -57,7 +57,7 @@ class AttendanceController extends Controller
 
         $attendance->update($validatedData);
 
-        $today = Carbon::today()->timezone('Asia/Yangon')->format('Y-m-d');
+        $today = Carbon::today()->timezone('Asia/Yangon');
 
         if($attendance->status === AttendanceEnum::LEAVE->value){
 
