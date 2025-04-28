@@ -6,6 +6,7 @@ use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 use function PHPSTORM_META\map;
@@ -17,13 +18,22 @@ class DepartmentController extends Controller
      */
     public function index(Request $request)
     {
-        $departments = DepartmentResource::collection(Department::all())->toArray($request);
-        $header_ids = Department::all()->pluck('header_id')->toArray();
 
-        $users = User::all()->map(fn($user) => [
-            'full_name' => $user->first_name . ' ' . $user->last_name,
-            'employee_id' => $user->employee_id
-        ])->toArray();
+         $time = now()->timezone('Asia/Yangon')->addMinutes(10);
+        $departments = Cache::remember('departments', $time, function () use ($request) {
+                return DepartmentResource::collection(Department::all())->toArray($request); // Cache the result of the collection conversion
+            });
+
+        $header_ids = Cache::remember('header_ids_department', $time, function () {
+                return Department::all()->pluck('header_id')->toArray(); // Cache the header_ids
+            });
+
+        $users = Cache::remember('users_department', $time, function () {
+                return User::all()->map(fn($user) => [
+                    'full_name' => $user->first_name . ' ' . $user->last_name,
+                    'employee_id' => $user->employee_id
+                ])->toArray(); // Cache the mapped user data
+            });
 
         return Inertia::render("Admin/Department", [
             'departments' => $departments,
@@ -37,6 +47,14 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
+        Cache::forget('departments');
+        Cache::forget('users_department');
+        Cache::forget('header_ids_department');
+        Cache::forget('pending_departments_dashboard');
+        Cache::forget('department_count_dashboard');
+        Cache::forget('all_departments_employee');
+
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'header_id' => 'required|string|exists:users,employee_id',
@@ -80,6 +98,13 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        Cache::forget('departments');
+        Cache::forget('users_department');
+        Cache::forget('header_ids_department');
+        Cache::forget('pending_departments_dashboard');
+        Cache::forget('department_count_dashboard');
+        Cache::forget('all_departments_employee');
+
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'header_id' => 'required|string|exists:users,employee_id',
@@ -144,6 +169,13 @@ class DepartmentController extends Controller
      */
     public function destroy(string $id)
     {
+        Cache::forget('departments');
+        Cache::forget('users_department');
+        Cache::forget('header_ids_department');
+        Cache::forget('pending_departments_dashboard');
+        Cache::forget('department_count_dashboard');
+        Cache::forget('all_departments_employee');
+
         $department = Department::findOrFail($id);
         $department->delete();
 

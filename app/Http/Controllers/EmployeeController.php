@@ -10,6 +10,7 @@ use App\Models\Department;
 use App\Models\Position;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -24,18 +25,29 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $all_employees = UserResource::collection(User::all())->toArray($request);
-        $all_departments = DepartmentResource::collection(Department::all())->toArray($request);
+         $time = now()->timezone('Asia/Yangon')->addMinutes(10);
 
-        $all_roles = Role::all()->toArray(fn($role) => [
-            'id' => $role->id,
-            'name' => $role->name,
-        ]);
+        $all_employees = Cache::remember('all_employees_employee', $time, function () use ($request) {
+            return UserResource::collection(User::all())->toArray($request); // Cache the result of the collection conversion
+        });
 
-        $all_positions = Position::all()->toArray(fn($position) => [
-            'id' => $position->id,
-            'name' => $position->name,
-        ]);
+        $all_departments = Cache::remember('all_departments_employee', $time, function () use ($request) {
+            return DepartmentResource::collection(Department::all())->toArray($request);
+        });
+
+        $all_roles = Cache::remember('all_roles_employee', $time, function () {
+            return Role::all()->toArray(fn($role) => [
+                 'id' => $role->id,
+                 'name' => $role->name,
+            ]);
+        });
+
+        $all_positions = Cache::remember('all_positions_employee', $time, function () {
+            return Position::all()->toArray(fn($position) => [
+                 'id' => $position->id,
+                 'name' => $position->name,
+            ]);
+        });
 
         return Inertia::render("Admin/Employee", [
             "all_employees" => $all_employees,
@@ -50,6 +62,16 @@ class EmployeeController extends Controller
      */
     public function store(CreateEmployeeRequest $request)
     {
+        Cache::forget('all_employees_employee');
+        Cache::forget('all_departments_employee');
+        Cache::forget('all_roles_employee');
+        Cache::forget('all_birthday_users');
+        Cache::forget('birthday_users_today');
+        Cache::forget('all_positions_employee');
+        Cache::forget('pending_employees_dashboard');
+
+
+
         $validated = $request->validated();
 
         $validatedEmail = Validator::make($request->only('email'), [
@@ -78,6 +100,14 @@ class EmployeeController extends Controller
      */
     public function update(CreateEmployeeRequest $request, string $id)
     {
+         Cache::forget('all_employees_employee');
+        Cache::forget('all_departments_employee');
+        Cache::forget('all_roles_employee');
+        Cache::forget('all_birthday_users');
+        Cache::forget('birthday_users_today');
+        Cache::forget('all_positions_employee');
+        Cache::forget('pending_employees_dashboard');
+
         $validated = $request->validated();
 
         $validatedEmail = Validator::make($request->only('email'), [
@@ -116,6 +146,14 @@ class EmployeeController extends Controller
      */
     public function destroy(string $id)
     {
+         Cache::forget('all_employees_employee');
+        Cache::forget('all_departments_employee');
+        Cache::forget('all_roles_employee');
+        Cache::forget('all_birthday_users');
+        Cache::forget('birthday_users_today');
+        Cache::forget('all_positions_employee');
+        Cache::forget('pending_employees_dashboard');
+        Cache::forget('employee_count_dashboard');
         // Find the employee by ID
         $employee = User::findOrFail($id);
 

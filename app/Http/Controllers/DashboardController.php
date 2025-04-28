@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ApprovingEnum;
-use App\Http\Resources\AttendanceResource;
-use App\Http\Resources\LeaveRequestResource;
 use App\Http\Resources\UpcomingEventResource;
 use App\Models\Attendance;
 use App\Models\Department;
@@ -12,11 +10,10 @@ use App\Models\LeaveRequest;
 use App\Models\UpcomingEvents;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
-use function Pest\Laravel\json;
 
 class DashboardController extends Controller
 {
@@ -25,48 +22,64 @@ class DashboardController extends Controller
     /**
      * Display a listing of the resource.
      */
+
     public function index(Request $request)
     {
-        // Pending Tasks
-        $pending_leave_requests = LeaveRequest::where('status', ApprovingEnum::PENDING->value);
-        $pending_employees = User::where('status', ApprovingEnum::PENDING->value);
-        $pending_departments = Department::where('status', ApprovingEnum::PENDING->value);
+        $time = now()->timezone('Asia/Yangon')->addMinutes(10);
+
+        // Pending Tasks - Cache
+        $pending_leave_requests = Cache::remember('pending_leave_requests_dashboard', $time, function () {
+            return LeaveRequest::where('status', ApprovingEnum::PENDING->value)->count(); // Cache the count directly
+        });
+        $pending_employees = Cache::remember('pending_employees_dashboard', $time, function () {
+            return User::where('status', ApprovingEnum::PENDING->value)->count(); // Cache the count directly
+        });
+        $pending_departments = Cache::remember('pending_departments_dashboard', $time, function () {
+            return Department::where('status', ApprovingEnum::PENDING->value)->count(); // Cache the count directly
+        });
+
         $pending_approvals = [
-            'leave_requests_count' => $pending_leave_requests->count(),
-            'employees_count' => $pending_employees->count(),
-            'departments_count' => $pending_departments->count(),
+            'leave_requests_count' => $pending_leave_requests,
+            'employees_count' => $pending_employees,
+            'departments_count' => $pending_departments,
         ];
 
-        // Recent Leave Requests
-        $leave_requests = LeaveRequest::whereYear('start_date', now()->year)
-            ->whereMonth('start_date', now()->month)
-            ->orderByDesc('start_date')
-            ->limit(10)
-            ->get()
-            ->map(function ($req) {
-                return [
-                    'employee_name' => $req->user->first_name . " " . $req->user->last_name,
-                    'status' => $req->status,
-                    'start_date' => $req->start_date,
-                    'end_date' => $req->end_date,
-                ];
-            })
-            ->toArray();
+        // Recent Leave Requests - Cache
+        $leave_requests = Cache::remember('recent_leave_requests_dashboard', $time, function () use ($request) {
+            return LeaveRequest::whereYear('start_date', now()->year)
+                ->whereMonth('start_date', now()->month)
+                ->orderByDesc('start_date')
+                ->limit(10)
+                ->get()
+                ->map(function ($req) {
+                    return [
+                        'employee_name' => $req->user->first_name . " " . $req->user->last_name,
+                        'status' => $req->status,
+                        'start_date' => $req->start_date,
+                        'end_date' => $req->end_date,
+                    ];
+                })
+                ->toArray(); // Ensure toArray() is called here to store as an array
+        });
 
+        // Upcoming Events - Cache
+        $upcoming_events = Cache::remember('upcoming_events_dashboard', $time, function () use ($request) {
+            return UpcomingEventResource::collection(UpcomingEvents::orderBy('start_date')->get())->toArray($request); // Ensure toArray() is called here
+        });
 
-        // Upcoming Events
-        $upcoming_events = UpcomingEventResource::collection(UpcomingEvents::orderBy('start_date')->get())->toArray($request);
-
-        // Attendance tracking
-        $all_attendances = Attendance::whereYear('date', now()->year)
-            ->orderByDesc('date')
-            ->get();
+        // Attendance tracking - Cache
+        $all_attendances = Cache::remember('all_attendances_dashboard', $time, function () {
+            return Attendance::whereYear('date', now()->year)
+                ->orderByDesc('date')
+                ->get()
+                ->toArray(); // Convert to array before caching
+        });
 
         $chart_type = $request->query('chart', 'day');
         $attendances = [];
 
         if ($chart_type === 'day') {
-            $attendances = $all_attendances->whereBetween('date', [
+            $attendances = collect($all_attendances)->whereBetween('date', [
                 now()->startOfMonth()->toDateString(),
                 now()->endOfMonth()->toDateString()
             ]);
@@ -76,16 +89,21 @@ class DashboardController extends Controller
 
         $attendances = collect($attendances)->map(function ($att) {
             return [
-                'status' => $att->status,
-                'date' => $att->date
+                'status' => $att['status'], // Access array element directly
+                'date' => $att['date']      // Access array element directly
             ];
         })->toArray();
 
-
         return Inertia::render("Admin/Dashboard", [
-            'employee_count' => User::count(),
-            'department_count' => Department::count(),
-            'leave_request_count' => LeaveRequest::count(),
+            'employee_count' => Cache::remember('employee_count_dashboard', $time, function () {
+                return User::count();
+            }),
+            'department_count' => Cache::remember('department_count_dashboard', $time, function () {
+                return Department::count();
+            }),
+            'leave_request_count' => Cache::remember('leave_request_count_dashboard', $time, function () {
+                return LeaveRequest::count();
+            }),
             'pending_approvals' => $pending_approvals,
             'leave_requests' => $leave_requests,
             'upcoming_events' => $upcoming_events,
@@ -95,11 +113,16 @@ class DashboardController extends Controller
     }
 
 
+
     /**
      * Upcoming Event Section
      */
     public function event_store(Request $request)
     {
+        Cache::forget('upcoming_events_dashboard');
+        Cache::forget('today_upcoming_events');
+
+
         $user = Auth::user();
         $validate = $request->validate([
             'title' => 'required|string|max:255',
@@ -129,6 +152,7 @@ class DashboardController extends Controller
 
     public function event_update(Request $request, string $id)
     {
+        Cache::forget('upcoming_events_dashboard');
         $user = Auth::user();
         $event = UpcomingEvents::find($id);
 
@@ -159,6 +183,7 @@ class DashboardController extends Controller
 
     public function event_destroy(string $id)
     {
+        Cache::forget('upcoming_events_dashboard');
         $event = UpcomingEvents::find($id);
 
         if (!$event) {

@@ -11,6 +11,7 @@ use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class AttendanceController extends Controller
@@ -21,13 +22,20 @@ class AttendanceController extends Controller
     public function index(Request $request)
     {
 
-        $attendances = Attendance::orderByDesc('date')->paginate(100);
+        $cacheKey = 'attendances_page_' . $request->page;
+        $time = now()->timezone('Asia/Yangon')->addMinutes(10);
 
-        $attendances_datas = AttendanceResource::collection(Attendance::orderByDesc('date')->paginate(100))->toArray($request);
+        $attendances_datas = Cache::remember($cacheKey,$time, function () use ($request) {
+            return AttendanceResource::collection(Attendance::orderByDesc('date')->paginate(100))->toArray($request);
+        });
+
+        $paginationLinks = Cache::remember('attendance_links_page_' . $request->page,$time, function () use ($request) {
+            return Attendance::orderByDesc('date')->paginate(100)->linkCollection();
+        });
 
         return Inertia::render('Admin/Attendance', [
             'attendances' => $attendances_datas,
-            'links' => $attendances->linkCollection(),
+            'links' => $paginationLinks,
         ]);
     }
 
@@ -44,6 +52,15 @@ class AttendanceController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        Cache::forget('attendances_page_' . $request->page);
+        Cache::forget('attendance_links_page_' . $request->page);
+        Cache::forget('attendances_today');
+        Cache::forget('leave_requests_today');
+        Cache::forget('leave_request_count_dashboard');
+        Cache::forget('all_attendances_dashboard');
+        Cache::forget('recent_leave_requests_dashboard');
+        Cache::forget('pending_leave_requests_dashboard');
+
         $userid = Auth::id();
         $validatedData = $request->validate([
             'status' => 'required|string',
@@ -82,6 +99,7 @@ class AttendanceController extends Controller
                 ]);
             }
         }
+
 
         return response()->json([
             'status' => 'success',

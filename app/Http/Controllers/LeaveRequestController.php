@@ -6,6 +6,7 @@ use App\Enums\ApprovingEnum;
 use App\Http\Resources\LeaveRequestResource;
 use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class LeaveRequestController extends Controller
@@ -15,9 +16,13 @@ class LeaveRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $leave_requests = LeaveRequestResource::collection(
-            LeaveRequest::orderByDesc('start_date')->get()
-        )->toArray($request);
+         $time = now()->timezone('Asia/Yangon')->addMinutes(10);
+
+        $leave_requests = Cache::remember('leave_requests', $time, function () use ($request) {
+            return LeaveRequestResource::collection(
+                      LeaveRequest::orderByDesc('start_date')->get()
+                )->toArray($request); // Cache the result of the collection conversion
+        });
 
         return Inertia::render("Admin/LeaveRequest", [
             'leave_requests' => $leave_requests,
@@ -26,6 +31,14 @@ class LeaveRequestController extends Controller
 
     public function approving(Request $request, string $id)
     {
+        Cache::forget('leave_requests');
+        Cache::forget('leave_requests_links');
+        Cache::forget('leave_requests_today');
+        Cache::forget('pending_leave_requests_dashboard');
+        Cache::forget('recent_leave_requests_dashboard');
+        Cache::forget('leave_request_count_dashboard');
+
+
         $leaveRequest = LeaveRequest::findOrFail($id);
         $leaveRequest->update(['status' => $request->get('type') === "approve" ? ApprovingEnum::APPROVED->value : ApprovingEnum::REJECTED->value]);
 
