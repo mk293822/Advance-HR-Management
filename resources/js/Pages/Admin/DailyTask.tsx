@@ -169,12 +169,14 @@ const DailyTasks = ({
                                                 {leave.leave_type} Leave
                                             </span>
                                             <div className="space-x-1">
-                                                <button className="btn btn-sm btn-outline btn-success">
-                                                    Approve
-                                                </button>
-                                                <button className="btn btn-sm btn-error">
-                                                    Reject
-                                                </button>
+                                                <a
+                                                    className="link link-primary"
+                                                    href={route(
+                                                        "leaveRequests"
+                                                    )}
+                                                >
+                                                    Edit
+                                                </a>
                                             </div>
                                         </div>
                                     ))
