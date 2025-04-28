@@ -22,6 +22,9 @@ A modern **Human Resource Management System** built with **Laravel 11** (API bac
 -   🌈 Fully styled with Tailwind CSS & daisyUI
 -   🧑‍⚖️ Role & permission system _(planned)_
 -   🧾 Audit logs and activity history _(planned)_
+-   ⚡ Caching for improved performance and reduced database load
+    -   Automatic cache clearing on updates to ensure data consistency
+    -   Supports Laravel's built-in cache system with flexible expiration times
 
 ---
 
