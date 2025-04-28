@@ -7,19 +7,69 @@ import {
 } from "@heroicons/react/24/outline";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Head } from "@inertiajs/react";
-import { AttendanceType, Employee, LeaveRequest } from "@/types/Admin";
+import {
+    AttendanceType,
+    Employee,
+    LeaveRequest,
+    UpcomingEvent,
+} from "@/types/Admin";
 import ActionButton from "@/Components/ActionButton";
 import { AttendanceEnum } from "@/types/Enums";
+import { stat } from "fs";
+import axios from "axios";
+import { useState } from "react";
+import ErrorShowModal from "@/Components/ErrorShowModal";
 
 const DailyTasks = ({
     attendances,
     leave_requests,
     birthday_users,
+    upcoming_events,
 }: {
     attendances: AttendanceType[];
     leave_requests: LeaveRequest[];
     birthday_users: Employee[];
+    upcoming_events: UpcomingEvent[];
 }) => {
+    const [localAttendances, setLocalAttendances] =
+        useState<AttendanceType[]>(attendances);
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<{
+        message: string;
+        status: number;
+    }>({
+        message: "",
+        status: 0,
+    });
+
+    // Handle attendance status change
+    const handleAttendanceStatusChange = ({
+        status,
+        id,
+    }: {
+        status: string;
+        id: number;
+    }) => {
+        axios
+            .put(route("attendances.update", id), { status: status })
+            .then((response) => {
+                if (response.data.status === "success") {
+                    setLocalAttendances((pre) =>
+                        pre.map((att) =>
+                            att.id === id ? { ...att, status: status } : att
+                        )
+                    );
+                }
+            })
+            .catch((err) => {
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
+                setShowErrorModal(true);
+            });
+    };
+
     return (
         <AdminLayout>
             <Head title="Daily Tasks" />
@@ -45,7 +95,7 @@ const DailyTasks = ({
                             <span className="badge badge-success">
                                 Present:{" "}
                                 {
-                                    attendances.filter(
+                                    localAttendances.filter(
                                         (att) =>
                                             att.status ===
                                             AttendanceEnum.PRESENT
@@ -55,7 +105,7 @@ const DailyTasks = ({
                             <span className="badge badge-error">
                                 Absent:{" "}
                                 {
-                                    attendances.filter(
+                                    localAttendances.filter(
                                         (att) =>
                                             att.status === AttendanceEnum.ABSENT
                                     ).length
@@ -64,7 +114,7 @@ const DailyTasks = ({
                             <span className="badge badge-warning">
                                 Leave:{" "}
                                 {
-                                    attendances.filter(
+                                    localAttendances.filter(
                                         (att) =>
                                             att.status === AttendanceEnum.LEAVE
                                     ).length
@@ -73,7 +123,7 @@ const DailyTasks = ({
                             <span className="badge badge-accent">
                                 Late:{" "}
                                 {
-                                    attendances.filter(
+                                    localAttendances.filter(
                                         (att) =>
                                             att.status === AttendanceEnum.LATE
                                     ).length
@@ -82,7 +132,7 @@ const DailyTasks = ({
                             <span className="badge badge-info">
                                 Half-day:{" "}
                                 {
-                                    attendances.filter(
+                                    localAttendances.filter(
                                         (att) =>
                                             att.status ===
                                             AttendanceEnum.HALF_DAY
@@ -197,48 +247,39 @@ const DailyTasks = ({
                     )}
 
                     {/* Upcoming Events */}
-                    <div className="card bg-gray-800/50 hover:bg-gray-800 shadow-xl">
-                        <div className="card-body">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="card-title text-xl text-white">
-                                        Upcoming Events
-                                    </h2>
-                                    <p className="text-sm text-gray-400">
-                                        This week
-                                    </p>
+                    {upcoming_events.length > 0 && (
+                        <div className="card bg-gray-800/50 hover:bg-gray-800 shadow-xl">
+                            <div className="card-body">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <h2 className="card-title text-xl text-white">
+                                            Upcoming Events
+                                        </h2>
+                                        <p className="text-sm text-gray-400">
+                                            This week
+                                        </p>
+                                    </div>
+                                    <CalendarDaysIcon className="w-6 h-6 text-indigo-400" />
                                 </div>
-                                <CalendarDaysIcon className="w-6 h-6 text-indigo-400" />
+                                <ul className="mt-4 text-sm space-y-1 text-gray-300">
+                                    {upcoming_events.map((event) => (
+                                        <li key={event.id}>
+                                            {event.title} -{" "}
+                                            {new Date(
+                                                event.start_date
+                                                    ? new Date(event.start_date)
+                                                    : new Date()
+                                            ).toLocaleDateString("en-US", {
+                                                month: "long",
+                                                day: "numeric",
+                                            })}
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                            <ul className="mt-4 text-sm space-y-1 text-gray-300">
-                                <li>📅 Company Meeting - Fri</li>
-                                <li>🏖️ Holiday: Labor Day - Mon</li>
-                            </ul>
                         </div>
-                    </div>
-
-                    {/* Notifications & Reminders */}
-                    {/* <div className="card bg-gray-800/50 hover:bg-gray-800 shadow-xl">
-                    <div className="card-body">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="card-title text-xl text-white">
-                                    Reminders
-                                </h2>
-                                <p className="text-sm text-gray-400">
-                                    Don't miss important updates
-                                </p>
-                            </div>
-                            <BellAlertIcon className="w-6 h-6 text-red-400" />
-                        </div>
-                        <ul className="mt-4 text-sm space-y-1 text-gray-300">
-                            <li>📝 ID for Sarah expires in 3 days</li>
-                            <li>💸 Payroll review due tomorrow</li>
-                        </ul>
-                    </div>
-                </div> */}
+                    )}
                 </div>
-                {/* Attendance Approval */}
                 {/* Attendance Approval */}
                 <div className="card bg-gray-800/50 shadow-xl mt-4">
                     <div className="card-body">
@@ -252,8 +293,8 @@ const DailyTasks = ({
                             <UserGroupIcon className="w-6 h-6 text-green-400" />
                         </div>
                         <ul className="mt-4 divide-y divide-gray-600">
-                            {attendances.length > 0 ? (
-                                attendances.map((attendance) => (
+                            {localAttendances.length > 0 ? (
+                                localAttendances.map((attendance) => (
                                     <li
                                         key={attendance.id}
                                         className="grid grid-cols-2 hover:bg-gray-800 p-2 py-3 rounded-sm"
@@ -287,18 +328,50 @@ const DailyTasks = ({
                                                     .toUpperCase()}
                                             </span>
                                             <div className="space-x-1">
-                                                <ActionButton
-                                                    color="green"
-                                                    onClick={() => {}}
-                                                >
-                                                    Present
-                                                </ActionButton>
-                                                <ActionButton
-                                                    color="yellow"
-                                                    onClick={() => {}}
-                                                >
-                                                    Other
-                                                </ActionButton>
+                                                {Object.values(AttendanceEnum)
+                                                    .filter(
+                                                        (att) =>
+                                                            att !==
+                                                            attendance.status
+                                                    )
+                                                    .map((status) => (
+                                                        <ActionButton
+                                                            key={status}
+                                                            color={
+                                                                status ===
+                                                                "present"
+                                                                    ? "green"
+                                                                    : status ===
+                                                                      "absent"
+                                                                    ? "red"
+                                                                    : status ===
+                                                                      "leave"
+                                                                    ? "yellow"
+                                                                    : status ===
+                                                                      "late"
+                                                                    ? "orange"
+                                                                    : status ===
+                                                                      "half_day"
+                                                                    ? "blue"
+                                                                    : "gray"
+                                                            }
+                                                            onClick={() =>
+                                                                handleAttendanceStatusChange(
+                                                                    {
+                                                                        status,
+                                                                        id: attendance.id,
+                                                                    }
+                                                                )
+                                                            }
+                                                        >
+                                                            {status
+                                                                .replace(
+                                                                    /_/g,
+                                                                    " "
+                                                                )
+                                                                .toUpperCase()}
+                                                        </ActionButton>
+                                                    ))}
                                             </div>
                                         </div>
                                     </li>
@@ -312,6 +385,13 @@ const DailyTasks = ({
                     </div>
                 </div>
             </div>
+
+            {/* Modals */}
+            <ErrorShowModal
+                show={showErrorModal}
+                message={errorMessage}
+                onClose={() => setShowErrorModal(false)}
+            />
         </AdminLayout>
     );
 };

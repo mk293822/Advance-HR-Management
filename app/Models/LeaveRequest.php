@@ -18,6 +18,7 @@ class LeaveRequest extends Model
         'reason',
         'status',
         'approved_by',
+        'attendance_id'
     ];
 
     public function user()

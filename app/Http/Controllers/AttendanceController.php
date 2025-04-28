@@ -2,9 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ApprovingEnum;
+use App\Enums\AttendanceEnum;
+use App\Enums\LeaveTypeEnum;
 use App\Http\Resources\AttendanceResource;
 use App\Models\Attendance;
+use App\Models\LeaveRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 class AttendanceController extends Controller
@@ -38,9 +44,10 @@ class AttendanceController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $userid = Auth::id();
         $validatedData = $request->validate([
             'status' => 'required|string',
-            'date' => 'required|date',
+            'date' => 'nullable|date',
             'check_out' => 'nullable|date_format:H:i:s',
             'check_in' => 'nullable|date_format:H:i:s',
             'remark' => 'nullable|string',
@@ -49,6 +56,32 @@ class AttendanceController extends Controller
         $attendance = Attendance::findOrFail($id);
 
         $attendance->update($validatedData);
+
+        $today = Carbon::today()->timezone('Asia/Yangon')->format('Y-m-d');
+
+        if($attendance->status === AttendanceEnum::LEAVE->value){
+
+            $leaveRequest = LeaveRequest::where('attendance_id', $attendance->id)->first();
+            if ($leaveRequest) {
+                $leaveRequest->update([
+                    'user_id' => $userid,
+                    'attendance_id' => $attendance->id,
+                    'start_date' => $today,
+                    'end_date' => $today,
+                    'employee_id' => $attendance->employee_id,
+                    'leave_type' => LeaveTypeEnum::CASUAL->value,
+                ]);
+            } else {
+                LeaveRequest::create([
+                    'user_id' => $userid,
+                    'attendance_id' => $attendance->id,
+                    'start_date' => $today,
+                    'end_date' => $today,
+                    'employee_id' => $attendance->employee_id,
+                    'leave_type' => LeaveTypeEnum::CASUAL->value,
+                ]);
+            }
+        }
 
         return response()->json([
             'status' => 'success',

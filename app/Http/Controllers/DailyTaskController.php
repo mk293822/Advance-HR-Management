@@ -6,9 +6,11 @@ use App\Enums\ApprovingEnum;
 use App\Enums\AttendanceEnum;
 use App\Http\Resources\AttendanceResource;
 use App\Http\Resources\LeaveRequestResource;
+use App\Http\Resources\UpcomingEventResource;
 use App\Http\Resources\UserResource;
 use App\Models\Attendance;
 use App\Models\LeaveRequest;
+use App\Models\UpcomingEvents;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -18,8 +20,9 @@ class DailyTaskController extends Controller
 {
     public function index(Request $request)
     {
+        $today = Carbon::today()->timezone('Asia/Yangon');
         // Attendances
-        $attendances = AttendanceResource::collection(Attendance::where('date', today())
+        $attendances = AttendanceResource::collection(Attendance::where('date', $today->format('Y-m-d'))
             ->orderByDesc('date')
             ->get())->toArray(request());
 
@@ -28,7 +31,6 @@ class DailyTaskController extends Controller
             ->where('status', ApprovingEnum::PENDING->value)->get())->toArray($request);
 
         // Birthday users
-        $today = Carbon::today()->timezone('Asia/Yangon');
 
         $users = User::whereNotNull('date_of_birth') // Optional: only users with DOB
             ->get()
@@ -36,12 +38,17 @@ class DailyTaskController extends Controller
                 return Carbon::parse($user->date_of_birth)->format('m-d') == $today->format('m-d');
             });
 
+        $upcoming_events = UpcomingEventResource::collection(UpcomingEvents::whereBetween('start_date', [$today->format('Y-m-d'), $today->endOfWeek()->format('Y-m-d')])
+            ->orderBy('start_date')
+            ->get())->toArray($request);
+
         $birthday_users = UserResource::collection($users)->toArray($request);
 
         return Inertia::render('Admin/DailyTask', [
             'attendances' => $attendances,
             'leave_requests' => $leave_requests,
             'birthday_users' => $birthday_users,
+            'upcoming_events' => $upcoming_events,
         ]);
     }
 
