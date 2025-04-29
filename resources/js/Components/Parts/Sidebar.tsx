@@ -21,11 +21,6 @@ const Sidebar = ({ isOpen }: { isOpen?: boolean }) => {
                     icon: <HomeIcon className="w-5 h-5 mr-2" />,
                     route: "dashboard",
                 },
-            ],
-        },
-        {
-            group: "Task & Attendance",
-            items: [
                 {
                     name: "Daily Tasks",
                     icon: (
@@ -33,6 +28,11 @@ const Sidebar = ({ isOpen }: { isOpen?: boolean }) => {
                     ),
                     route: "dailyTasks",
                 },
+            ],
+        },
+        {
+            group: "Attendance",
+            items: [
                 {
                     name: "Attendances Tracking",
                     icon: <CalendarIcon className="w-5 h-5 mr-2" />,
