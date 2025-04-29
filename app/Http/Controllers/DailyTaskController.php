@@ -32,8 +32,7 @@ class DailyTaskController extends Controller
 
         // Leave requests
         $leave_requests = Cache::remember('leave_requests_today', $time, function () use ($today, $request) {
-            return LeaveRequestResource::collection(LeaveRequest::where('start_date', $today)
-                        ->where('status', ApprovingEnum::PENDING->value)->get())->toArray($request);
+            return LeaveRequestResource::collection(LeaveRequest::where('start_date', $today)->get())->toArray($request);
         });
 
         // Birthday users

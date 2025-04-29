@@ -8,6 +8,7 @@ use App\Enums\LeaveTypeEnum;
 use App\Http\Resources\AttendanceResource;
 use App\Models\Attendance;
 use App\Models\LeaveRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -60,8 +61,8 @@ class AttendanceController extends Controller
         Cache::forget('all_attendances_dashboard');
         Cache::forget('recent_leave_requests_dashboard');
         Cache::forget('pending_leave_requests_dashboard');
+        Cache::forget('leave_requests');
 
-        $userid = Auth::id();
         $validatedData = $request->validate([
             'status' => 'required|string',
             'date' => 'nullable|date',
@@ -78,7 +79,10 @@ class AttendanceController extends Controller
 
         if($attendance->status === AttendanceEnum::LEAVE->value){
 
+            $userid = User::where('employee_id', $attendance->employee_id)->first()->id;
+
             $leaveRequest = LeaveRequest::where('attendance_id', $attendance->id)->first();
+
             if ($leaveRequest) {
                 $leaveRequest->update([
                     'user_id' => $userid,
@@ -97,6 +101,12 @@ class AttendanceController extends Controller
                     'employee_id' => $attendance->employee_id,
                     'leave_type' => LeaveTypeEnum::CASUAL->value,
                 ]);
+            }
+        } else {
+            $leaveRequest = LeaveRequest::where('attendance_id', $attendance->id)->first();
+
+            if ($leaveRequest) {
+                $leaveRequest->delete();
             }
         }
 

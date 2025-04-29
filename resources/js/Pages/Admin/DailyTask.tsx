@@ -19,6 +19,7 @@ import { stat } from "fs";
 import axios from "axios";
 import { useState } from "react";
 import ErrorShowModal from "@/Components/ErrorShowModal";
+import clsx from "clsx";
 
 const DailyTasks = ({
     attendances,
@@ -167,6 +168,22 @@ const DailyTasks = ({
                                             <span>
                                                 {leave.employee_name} -{" "}
                                                 {leave.leave_type} Leave
+                                            </span>
+                                            <span
+                                                className={clsx(
+                                                    "badge",
+                                                    leave.status ===
+                                                        "approved" &&
+                                                        " badge-success",
+                                                    leave.status ===
+                                                        "rejected" &&
+                                                        " badge-error",
+                                                    leave.status ===
+                                                        "pending" &&
+                                                        " badge-warning"
+                                                )}
+                                            >
+                                                {leave.status}
                                             </span>
                                             <div className="space-x-1">
                                                 <a
