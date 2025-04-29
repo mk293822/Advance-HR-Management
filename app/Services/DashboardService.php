@@ -81,7 +81,7 @@ class DashboardService
     public function getAllAttendances(string $chart_type)
     {
         // Attendance tracking - Cache
-        $all_attendances = $this->handleCache->remember('all_attendances_dashboard_'.$chart_type,  null, function () {
+        $all_attendances = $this->handleCache->remember('all_attendances_dashboard',  null, function () {
             return Attendance::whereYear('date', now()->year)
                 ->orderByDesc('date')
                 ->get()
@@ -99,7 +99,7 @@ class DashboardService
             $attendances = $all_attendances;
         }
 
-        $attendances = $this->handleCache->remember('attendances_dashboard_'.$chart_type, null, function() use($attendances){
+        $attendances = $this->handleCache->remember("attendances_dashboard_{$chart_type}", null, function() use($attendances){
             return collect($attendances)->map(function ($att) {
                     return [
                         'status' => $att['status'], // Access array element directly

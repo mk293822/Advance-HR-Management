@@ -39,13 +39,12 @@ class AttendanceController extends Controller
             'attendances_today',
             'leave_requests_today',
             'leave_request_count_dashboard',
-            'all_attendances_dashboard_day',
-            'attendances_dashboard_day',
-            'all_attendances_dashboard_month',
-            'attendances_dashboard_month',
             'recent_leave_requests_dashboard',
             'pending_leave_requests_dashboard',
             'leave_requests',
+            'all_attendances_dashboard',
+            'attendances_dashboard_day',
+            'attendances_dashboard_month',
         ]);
 
         $validatedData = $request->validated();
