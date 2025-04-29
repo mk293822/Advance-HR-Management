@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Services;
+
+use App\Actions\HandleCache;
+use App\Http\Resources\DepartmentResource;
+use App\Models\Department;
+use App\Models\User;
+
+class DepartmentService
+{
+
+    public $handleCache;
+
+    public function __construct()
+    {
+        $this->handleCache = new HandleCache();
+    }
+
+    public function getDepartments($request)
+    {
+        return $this->handleCache->remember('departments', null, function () use ($request) {
+                return DepartmentResource::collection(Department::all())->toArray($request); // Cache the result of the collection conversion
+            });
+    }
+
+    public function getUsers()
+    {
+        return $this->handleCache->remember('users_department', null, function () {
+                return User::all()->map(fn($user) => [
+                    'full_name' => $user->first_name . ' ' . $user->last_name,
+                    'employee_id' => $user->employee_id
+                ])->toArray(); // Cache the mapped user data
+            });
+    }
+
+    public function getHeaderIds()
+    {
+        return $this->handleCache->remember('header_ids_department', null, function () {
+                return Department::all()->pluck('header_id')->toArray(); // Cache the header_ids
+            });
+    }
+}

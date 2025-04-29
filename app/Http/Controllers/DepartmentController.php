@@ -2,38 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\HandleCache;
+use App\Http\Requests\DepartmentRequest;
 use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
 use App\Models\User;
+use App\Services\DepartmentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 use function PHPSTORM_META\map;
 
 class DepartmentController extends Controller
 {
+
+    public $handleCache;
+
+    public function __construct()
+    {
+        $this->handleCache = new HandleCache();
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, DepartmentService $service)
     {
 
-         $time = now()->timezone('Asia/Yangon')->addMinutes(10);
-        $departments = Cache::remember('departments', $time, function () use ($request) {
-                return DepartmentResource::collection(Department::all())->toArray($request); // Cache the result of the collection conversion
-            });
+        $departments = $service->getDepartments($request);
 
-        $header_ids = Cache::remember('header_ids_department', $time, function () {
-                return Department::all()->pluck('header_id')->toArray(); // Cache the header_ids
-            });
+        $header_ids = $service->getHeaderIds();
 
-        $users = Cache::remember('users_department', $time, function () {
-                return User::all()->map(fn($user) => [
-                    'full_name' => $user->first_name . ' ' . $user->last_name,
-                    'employee_id' => $user->employee_id
-                ])->toArray(); // Cache the mapped user data
-            });
+        $users = $service->getUsers();
 
         return Inertia::render("Admin/Department", [
             'departments' => $departments,
@@ -47,49 +48,54 @@ class DepartmentController extends Controller
      */
     public function store(Request $request)
     {
-        Cache::forget('departments');
-        Cache::forget('users_department');
-        Cache::forget('header_ids_department');
-        Cache::forget('pending_departments_dashboard');
-        Cache::forget('department_count_dashboard');
-        Cache::forget('all_departments_employee');
 
-
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'header_id' => 'required|string|exists:users,employee_id',
-            'description' => 'nullable|string|max:500',
-            'status' => 'required|string',
-            'participants' => 'array',
-            'participants.*.employee_id' => 'string|exists:users,employee_id',
-            'participants.*.full_name' => 'string'
+        $this->handleCache->clear([
+            'departments',
+            'users_department',
+            'header_ids_department',
+            'pending_departments_dashboard',
+            'department_count_dashboard',
+            'all_departments_employee'
         ]);
 
-        // Checking participants and header are already in a department
-        $header_ids = Department::all()->pluck('header_id')->toArray();
+        DB::beginTransaction();
+        try {
 
-        if (in_array($validatedData['header_id'], $header_ids)) {
-            $validatedData['header_id'] = null;
+            $validatedData = $request->validated();
+
+            // Checking participants and header are already in a department
+            $header_ids = Department::pluck('header_id')->toArray();
+
+            if (in_array($validatedData['header_id'], $header_ids)) {
+                $validatedData['header_id'] = null;
+            }
+
+            $conflictingParticipants = collect($validatedData['participants'])
+                ->filter(fn($p) => in_array($p['employee_id'], $header_ids));
+
+            if ($conflictingParticipants->isNotEmpty()) {
+                $validatedData['header_id'] = null;
+            }
+
+            $department = Department::create($validatedData);
+
+            collect($validatedData['participants'])->map(function ($participant) use ($department) {
+                User::where("employee_id", $participant['employee_id'])->update([
+                    'department_id' => $department->id
+                ]);
+            });
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+             throw $e;
         }
-        $conflictingParticipants = collect($validatedData['participants'])
-            ->filter(fn($p) => in_array($p['employee_id'], $header_ids));
 
-        if ($conflictingParticipants->isNotEmpty()) {
-            $validatedData['header_id'] = null;
-        }
-
-        $department = Department::create($validatedData);
-
-        collect($validatedData['participants'])->map(function ($participant) use ($department) {
-            User::where("employee_id", $participant['employee_id'])->update([
-                'department_id' => $department->id
-            ]);
-        });
 
         return response()->json([
             'status' => 'success',
             'data' => (new DepartmentResource($department))->toArray($request)
-        ], 201);
+        ], 200);
     }
 
 
@@ -98,70 +104,48 @@ class DepartmentController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        Cache::forget('departments');
-        Cache::forget('users_department');
-        Cache::forget('header_ids_department');
-        Cache::forget('pending_departments_dashboard');
-        Cache::forget('department_count_dashboard');
-        Cache::forget('all_departments_employee');
 
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'header_id' => 'required|string|exists:users,employee_id',
-            'description' => 'nullable|string|max:500',
-            'status' => 'required|string',
-            'participants' => 'array',
-            'participants.*.employee_id' => 'string|exists:users,employee_id',
-            'participants.*.full_name' => 'string'
+        $this->handleCache->clear([
+            'departments',
+            'users_department',
+            'header_ids_department',
+            'pending_departments_dashboard',
+            'department_count_dashboard',
+            'all_departments_employee'
         ]);
+        // Validate the request data
+        $validatedData = $request->validated();
 
+        // Find the department, or fail if not found
         $department = Department::findOrFail($id);
-        $users = User::where('department_id', $department->id)->get();
+
+         // Update the department (observer will handle the logic for participants and header_id)
         $department->update($validatedData);
 
-        $updatedEmployees = collect($validatedData['participants']);
-        $oldEmployees = $users;
-        $departmentId = $department->id;
 
-        // Unassign users who are no longer in the updated list
-        $oldEmployees->each(function ($oldUser) use ($updatedEmployees) {
-            if (!$updatedEmployees->contains('employee_id', $oldUser->employee_id)) {
-                $oldUser->department_id = null;
-                $oldUser->save();
+        // Handle department header
+        if (isset($validatedData['header_id'])) {
+            // Update the Header of the Department
+            User::where('employee_id', $department->header_id)->update([
+                'department_id' => $department->id
+            ]);
+
+            // Unset the header if it conflicts with another department
+            $unset_header = Department::where('id', '!=', $department->id)
+                ->where('header_id', $department->header_id)
+                ->first();
+
+            if ($unset_header) {
+                $unset_header->header_id = null;
+                $unset_header->save();
             }
-        });
-
-        // Assign department_id to new users (or reassign existing ones)
-        $updatedEmployees->each(function ($participant) use ($oldEmployees, $departmentId) {
-            // Check if already exists in old users
-            if ($oldEmployees->contains('employee_id', $participant['employee_id'])) return;
-
-            // Not in old users → new participant
-            $user = User::where('employee_id', $participant['employee_id'])->first();
-            if ($user) {
-                $user->department_id = $departmentId;
-                $user->save();
-            }
-        });
-
-        // Update the Header of the Department
-        User::where('employee_id', $department->header_id)->update([
-            'department_id' => $department->id
-        ]);
-
-        $unset_header = Department::where('id', '!=', $department->id)
-            ->where('header_id', $department->header_id)
-            ->first();
-
-        if ($unset_header) {
-            $unset_header->header_id = null;
-            $unset_header->save();
         }
+
         return response()->json([
             'status' => 'success',
             'data' => (new DepartmentResource($department))->toArray($request),
             'unset_header' => $unset_header?->id
-        ]);
+        ], 200);
     }
 
     /**
@@ -169,18 +153,21 @@ class DepartmentController extends Controller
      */
     public function destroy(string $id)
     {
-        Cache::forget('departments');
-        Cache::forget('users_department');
-        Cache::forget('header_ids_department');
-        Cache::forget('pending_departments_dashboard');
-        Cache::forget('department_count_dashboard');
-        Cache::forget('all_departments_employee');
+
+        $this->handleCache->clear([
+            'departments',
+            'users_department',
+            'header_ids_department',
+            'pending_departments_dashboard',
+            'department_count_dashboard',
+            'all_departments_employee'
+        ]);
 
         $department = Department::findOrFail($id);
         $department->delete();
 
         return response()->json([
             'status' => 'success',
-        ]);
+        ], 200);
     }
 }

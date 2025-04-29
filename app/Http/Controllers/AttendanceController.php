@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\HandleCache;
+use App\Actions\RecordAttendance;
 use App\Enums\ApprovingEnum;
 use App\Enums\AttendanceEnum;
 use App\Enums\LeaveTypeEnum;
+use App\Http\Requests\AttendanceRequest;
 use App\Http\Resources\AttendanceResource;
 use App\Models\Attendance;
 use App\Models\LeaveRequest;
 use App\Models\User;
+use App\Services\AttendanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -20,19 +24,12 @@ class AttendanceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, AttendanceService $attendanceService)
     {
 
-        $cacheKey = 'attendances_page_' . $request->page;
-        $time = now()->timezone('Asia/Yangon')->addMinutes(10);
+        $attendances_datas = $attendanceService->getAttendances($request);
 
-        $attendances_datas = Cache::remember($cacheKey,$time, function () use ($request) {
-            return AttendanceResource::collection(Attendance::orderByDesc('date')->paginate(100))->toArray($request);
-        });
-
-        $paginationLinks = Cache::remember('attendance_links_page_' . $request->page,$time, function () use ($request) {
-            return Attendance::orderByDesc('date')->paginate(100)->linkCollection();
-        });
+        $paginationLinks = $attendanceService->getPaginationLinks($request);
 
         return Inertia::render('Admin/Attendance', [
             'attendances' => $attendances_datas,
@@ -41,87 +38,32 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(AttendanceRequest $request, string $id, HandleCache $handleCache, RecordAttendance $recordAttendance)
     {
-        Cache::forget('attendances_page_' . $request->page);
-        Cache::forget('attendance_links_page_' . $request->page);
-        Cache::forget('attendances_today');
-        Cache::forget('leave_requests_today');
-        Cache::forget('leave_request_count_dashboard');
-        Cache::forget('all_attendances_dashboard');
-        Cache::forget('recent_leave_requests_dashboard');
-        Cache::forget('pending_leave_requests_dashboard');
-        Cache::forget('leave_requests');
-
-        $validatedData = $request->validate([
-            'status' => 'required|string',
-            'date' => 'nullable|date',
-            'check_out' => 'nullable|date_format:H:i:s',
-            'check_in' => 'nullable|date_format:H:i:s',
-            'remark' => 'nullable|string',
+        $handleCache->clear([
+            'attendances_page_' . $request->page,
+            'attendance_links_page_' . $request->page,
+            'attendances_today',
+            'leave_requests_today',
+            'leave_request_count_dashboard',
+            'all_attendances_dashboard',
+            'recent_leave_requests_dashboard',
+            'pending_leave_requests_dashboard',
+            'leave_requests',
+            'attendances_dashboard'
         ]);
 
-        $attendance = Attendance::findOrFail($id);
+        $validatedData = $request->validated();
 
-        $attendance->update($validatedData);
-
-        $today = Carbon::today()->timezone('Asia/Yangon');
-
-        if($attendance->status === AttendanceEnum::LEAVE->value){
-
-            $userid = User::where('employee_id', $attendance->employee_id)->first()->id;
-
-            $leaveRequest = LeaveRequest::where('attendance_id', $attendance->id)->first();
-
-            if ($leaveRequest) {
-                $leaveRequest->update([
-                    'user_id' => $userid,
-                    'attendance_id' => $attendance->id,
-                    'start_date' => $today,
-                    'end_date' => $today,
-                    'employee_id' => $attendance->employee_id,
-                    'leave_type' => LeaveTypeEnum::CASUAL->value,
-                ]);
-            } else {
-                LeaveRequest::create([
-                    'user_id' => $userid,
-                    'attendance_id' => $attendance->id,
-                    'start_date' => $today,
-                    'end_date' => $today,
-                    'employee_id' => $attendance->employee_id,
-                    'leave_type' => LeaveTypeEnum::CASUAL->value,
-                ]);
-            }
-        } else {
-            $leaveRequest = LeaveRequest::where('attendance_id', $attendance->id)->first();
-
-            if ($leaveRequest) {
-                $leaveRequest->delete();
-            }
-        }
-
+        $attendance = $recordAttendance->update($id, $validatedData);
 
         return response()->json([
             'status' => 'success',
             'data' => (new AttendanceResource($attendance))->toArray($request)
-        ], 201);
+        ], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
+
 }

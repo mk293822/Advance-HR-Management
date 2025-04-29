@@ -67,6 +67,7 @@ class DailyTaskAutomation implements ShouldQueue
 
             DB::commit();
         } catch (\Exception $e) {
+            DB::rollBack();
             // Log the exception
             Log::error('DailyTaskAutomation Job Failed: ' . $e->getMessage());
         }

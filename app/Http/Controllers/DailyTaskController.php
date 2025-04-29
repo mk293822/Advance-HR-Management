@@ -2,58 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ApprovingEnum;
-use App\Enums\AttendanceEnum;
-use App\Http\Resources\AttendanceResource;
-use App\Http\Resources\LeaveRequestResource;
-use App\Http\Resources\UpcomingEventResource;
-use App\Http\Resources\UserResource;
-use App\Models\Attendance;
-use App\Models\LeaveRequest;
-use App\Models\UpcomingEvents;
-use App\Models\User;
+use App\Services\DailyTaskService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 
 class DailyTaskController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, DailyTaskService $dailyTaskService)
     {
-        $today = Carbon::today()->timezone('Asia/Yangon');
-        $time = now()->timezone('Asia/Yangon')->addMinutes(10);
         // Attendances
-        $attendances = Cache::remember('attendances_today', $time, function () use ($today, $request) {
-            return AttendanceResource::collection(Attendance::where('date', $today->format('Y-m-d'))
-                        ->orderByDesc('date')
-                        ->get())->toArray($request);
-        });
+        $attendances = $dailyTaskService->getAttendances($request);
 
         // Leave requests
-        $leave_requests = Cache::remember('leave_requests_today', $time, function () use ($today, $request) {
-            return LeaveRequestResource::collection(LeaveRequest::where('start_date', $today)->get())->toArray($request);
-        });
+        $leave_requests = $dailyTaskService->getLeaveRequests($request);
+
+        // Upcoming events
+        $upcoming_events = $dailyTaskService->getUpcomingEvents($request);
 
         // Birthday users
-
-        $users = Cache::remember('all_birthday_users', $time, function () use ($today) {
-            return User::whereNotNull('date_of_birth') // Optional: only users with DOB
-                        ->get()
-                        ->filter(function ($user) use ($today) {
-                            return Carbon::parse($user->date_of_birth)->format('m-d') == $today->format('m-d');
-                        });
-        });
-
-        $upcoming_events = Cache::remember('today_upcoming_events', $time, function () use ($today, $request) {
-            return UpcomingEventResource::collection(UpcomingEvents::whereBetween('start_date', [$today->format('Y-m-d'), $today->endOfWeek()->format('Y-m-d')])
-                        ->orderBy('start_date')
-                        ->get())->toArray($request);
-        });
-
-        $birthday_users = Cache::remember('birthday_users_today', $time, function () use ($users, $request) {
-            return UserResource::collection($users)->toArray($request);
-        });
+        $birthday_users = $dailyTaskService->getBirthdayUsers($request);
 
         return Inertia::render('Admin/DailyTask', [
             'attendances' => $attendances,
@@ -63,18 +30,4 @@ class DailyTaskController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
-        // Store daily task logic
-    }
-
-    public function update(Request $request, $id)
-    {
-        // Update daily task logic
-    }
-
-    public function destroy($id)
-    {
-        // Delete daily task logic
-    }
 }

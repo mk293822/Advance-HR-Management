@@ -285,42 +285,37 @@ export default function Dashboard({
                     </div>
 
                     <ul className="text-sm text-gray-300 max-h-80 overflow-y-auto divide-y divide-gray-700">
-                        {localUpcomingEvents.map(
-                            (event, index) =>
-                                event.start_date > new Date().toISOString() && (
-                                    <li
-                                        onClick={() =>
-                                            handleUpcomingEventClick(event)
-                                        }
-                                        key={index}
-                                        className="flex flex-col hover:bg-gray-700 sm:flex-row justify-between items-start sm:items-center py-3 px-2 rounded-lg transition-colors"
-                                    >
-                                        <span className="font-medium text-white">
-                                            {event.title}
+                        {localUpcomingEvents.map((event, index) => (
+                            <li
+                                onClick={() => handleUpcomingEventClick(event)}
+                                key={index}
+                                className="flex flex-col hover:bg-gray-700 sm:flex-row justify-between items-start sm:items-center py-3 px-2 rounded-lg transition-colors"
+                            >
+                                <span className="font-medium text-white">
+                                    {event.title}
+                                </span>
+                                <div className="text-xs sm:text-sm text-gray-400 flex mt-1 sm:mt-0 sm:text-right">
+                                    <span className="block lg:hidden">
+                                        At{" "}
+                                        <span className="text-blue-400">
+                                            {event.start_date}
                                         </span>
-                                        <div className="text-xs sm:text-sm text-gray-400 flex mt-1 sm:mt-0 sm:text-right">
-                                            <span className="block lg:hidden">
-                                                At{" "}
-                                                <span className="text-blue-400">
-                                                    {event.start_date}
-                                                </span>
-                                            </span>
-                                            <span className="hidden lg:block">
-                                                from{" "}
-                                                <span className="text-blue-400">
-                                                    {event.start_date}
-                                                </span>
-                                            </span>
-                                            <span className="hidden lg:block ml-0 sm:ml-2">
-                                                to{" "}
-                                                <span className="text-green-400">
-                                                    {event.end_date}
-                                                </span>
-                                            </span>
-                                        </div>
-                                    </li>
-                                )
-                        )}
+                                    </span>
+                                    <span className="hidden lg:block">
+                                        from{" "}
+                                        <span className="text-blue-400">
+                                            {event.start_date}
+                                        </span>
+                                    </span>
+                                    <span className="hidden lg:block ml-0 sm:ml-2">
+                                        to{" "}
+                                        <span className="text-green-400">
+                                            {event.end_date}
+                                        </span>
+                                    </span>
+                                </div>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </main>
