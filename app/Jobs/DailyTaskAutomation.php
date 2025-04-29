@@ -6,6 +6,7 @@ use App\Enums\ApprovingEnum;
 use App\Enums\AttendanceEnum;
 use App\Models\Attendance;
 use App\Models\LeaveRequest;
+use App\Models\UpcomingEvents;
 use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -43,6 +44,7 @@ class DailyTaskAutomation implements ShouldQueue
                 $request->save();
             }
 
+
             // Create daily Attendances for all users
             $users = User::all();
             $today = Carbon::today()->timezone('Asia/Yangon')->format('Y-m-d');
@@ -62,6 +64,16 @@ class DailyTaskAutomation implements ShouldQueue
                         'check_out' => null,
                         'remarks' => null,
                     ]);
+                }
+            }
+
+
+            //  Delete event that is done
+            $events = UpcomingEvents::where('end_date', '<', $today)->get();
+
+            if($events->isNotEmpty()) {
+                foreach ($events as $event) {
+                    $event->delete();
                 }
             }
 
