@@ -28,7 +28,7 @@ class DepartmentService
     {
         return $this->handleCache->remember('users_department', null, function () {
                 return User::all()->map(fn($user) => [
-                    'full_name' => $user->first_name . ' ' . $user->last_name,
+                    'full_name' => $user->full_name,
                     'employee_id' => $user->employee_id
                 ])->toArray(); // Cache the mapped user data
             });

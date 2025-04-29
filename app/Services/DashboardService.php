@@ -56,7 +56,7 @@ class DashboardService
                 ->get()
                 ->map(function ($req) {
                     return [
-                        'employee_name' => $req->user->first_name . " " . $req->user->last_name,
+                        'employee_name' => $req->user->full_name,
                         'status' => $req->status,
                         'start_date' => $req->start_date,
                         'end_date' => $req->end_date,

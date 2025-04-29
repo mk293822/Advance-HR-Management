@@ -23,13 +23,13 @@ class DepartmentResource extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'header' => $header ?  [
-                'full_name' => $header->first_name . ' ' . $header->last_name,
+                'full_name' => $header->full_name,
                 'employee_id' => $header->employee_id,
             ] : null,
             'employees_count' => $this->employees->count(),
             'participants' => $this->employees->map(fn($emp) => [
                 'employee_id' => $emp->employee_id,
-                'full_name' => $emp->first_name . ' ' . $emp->last_name,
+                'full_name' => $emp->full_name,
             ])->toArray(),
             'status' => $this->status,
             'created_at' => $this->created_at,

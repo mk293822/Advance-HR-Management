@@ -19,7 +19,7 @@ class AttendanceResource extends JsonResource
         return [
             'id' => $this->id,
             'employee' => [
-                'full_name' => $employee->first_name . ' ' . $employee->last_name,
+                'full_name' => $employee->full_name,
                 'employee_id' => $employee->employee_id
             ],
             'status' => $this->status,
