@@ -77,6 +77,12 @@ export default function DepartmentsPage({
         request
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalDepartments((prev) => {
                         let updated;
                         if (isEdit && selectedDepartment) {
@@ -132,6 +138,12 @@ export default function DepartmentsPage({
             .delete(route("departments.destroy", selectedDepartment?.id))
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalDepartments((prev) =>
                         prev.filter(
                             (employee) => employee.id !== selectedDepartment?.id

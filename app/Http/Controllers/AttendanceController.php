@@ -53,6 +53,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'message' => 'Attendance updated successfully',
             'data' => (new AttendanceResource($attendance))->toArray($request)
         ], 200);
     }

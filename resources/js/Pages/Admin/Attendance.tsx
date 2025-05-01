@@ -53,6 +53,11 @@ const Attendance = ({ attendances, links }: AttendanceProps) => {
         request
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
                     setLocalAttendances((prev) => {
                         let updated;
                         if (isEdit && selectedAttendance) {

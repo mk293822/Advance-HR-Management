@@ -61,6 +61,7 @@ class LeaveRequestController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'message' => 'Leave request updated successfully',
             'data' => (new LeaveRequestResource($leaveRequest))->toArray($request),
         ]);
     }

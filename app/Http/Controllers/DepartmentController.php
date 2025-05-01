@@ -98,6 +98,7 @@ class DepartmentController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'message' => 'Department created successfully',
             'data' => (new DepartmentResource($department))->toArray($request)
         ], 200);
     }
@@ -148,6 +149,7 @@ class DepartmentController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'message' => 'Department updated successfully',
             'data' => (new DepartmentResource($department))->toArray($request),
             'unset_header' => $unset_header?->id
         ], 200);
@@ -174,6 +176,7 @@ class DepartmentController extends Controller
 
         return response()->json([
             'status' => 'success',
+            'message' => 'Department deleted successfully',
         ], 200);
     }
 }

@@ -65,6 +65,12 @@ const index = ({
         request
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalEmployees((prev) => {
                         let updated;
                         if (showEditEmployee && selectedEmployee) {
@@ -109,6 +115,12 @@ const index = ({
             .delete(route("employees.destroy", selectedEmployee?.id))
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalEmployees((prev) =>
                         prev.filter(
                             (employee) => employee.id !== selectedEmployee?.id

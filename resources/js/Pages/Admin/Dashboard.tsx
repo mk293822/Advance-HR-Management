@@ -117,6 +117,12 @@ export default function Dashboard({
         request
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalUpcomingEvents((prev) => {
                         let updated;
                         if (isEditEvent && selectedEvent) {
@@ -166,6 +172,12 @@ export default function Dashboard({
                 .delete(route("upcomingEvent.destroy", selectedEvent.id))
                 .then((res) => {
                     if (res.data.status === "success") {
+                        setErrorMessage({
+                            message: res.data.message,
+                            status: 200,
+                        });
+                        setShowErrorModal(true);
+
                         setLocalUpcomingEvents((prev) =>
                             prev.filter(
                                 (event) => event.id !== selectedEvent.id

@@ -63,6 +63,12 @@ export default function LeaveRequestsPage({
             .put(route("leaveRequests.update", id), { status: type })
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalLeaveRequests((pre) =>
                         pre.map((leave) =>
                             leave.id === id ? res.data.data : leave
@@ -91,6 +97,12 @@ export default function LeaveRequestsPage({
         request
             .then((res) => {
                 if (res.data.status === "success") {
+                    setErrorMessage({
+                        message: res.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalLeaveRequests((prev) => {
                         let updated;
                         if (isEdit && selectedLeave) {

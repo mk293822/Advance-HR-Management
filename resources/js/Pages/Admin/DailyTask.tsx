@@ -54,6 +54,12 @@ const DailyTasks = ({
             .put(route("attendances.update", id), { status: status })
             .then((response) => {
                 if (response.data.status === "success") {
+                    setErrorMessage({
+                        message: response.data.message,
+                        status: 200,
+                    });
+                    setShowErrorModal(true);
+
                     setLocalAttendances((pre) =>
                         pre.map((att) =>
                             att.id === id ? { ...att, status: status } : att

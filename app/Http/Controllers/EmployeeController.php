@@ -88,6 +88,7 @@ class EmployeeController extends Controller
         // Return a response or redirect
         return response()->json([
             'status' => 'success',
+            'message' => 'Employee Created Successfully',
             'data' => (new UserResource($employee))->toArray($request),
         ]);
     }
@@ -137,6 +138,7 @@ class EmployeeController extends Controller
         // Return a response or redirect
         return response()->json([
             'status' => 'success',
+            'message' => 'Employee Updated Successfully',
             'data' => (new UserResource($employee))->toArray($request),
         ]);
     }
@@ -178,6 +180,7 @@ class EmployeeController extends Controller
         // Return a response or redirect
         return response()->json([
             'status' => 'success',
+            'message' => 'Employee Deleted Successfully',
         ], 200);
     }
 }

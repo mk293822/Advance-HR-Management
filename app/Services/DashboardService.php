@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Actions\HandleCache;
 use App\Enums\ApprovingEnum;
+use App\Enums\UserStatusEnum;
 use App\Http\Resources\UpcomingEventResource;
 use App\Models\Attendance;
 use App\Models\Department;
@@ -11,6 +12,7 @@ use App\Models\LeaveRequest;
 use App\Models\UpcomingEvents;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
@@ -29,13 +31,12 @@ class DashboardService
         });
 
         $pending_employees = $this->handleCache->remember('pending_employees_dashboard', null, function () {
-            return User::where('status', ApprovingEnum::PENDING->value)->count(); // Cache the count directly
+            return User::where('status', UserStatusEnum::Pending->value)->count(); // Cache the count directly
         });
 
         $pending_departments = $this->handleCache->remember('pending_departments_dashboard', null, function () {
-            return Department::where('status', ApprovingEnum::PENDING->value)->count(); // Cache the count directly
+            return Department::where('status', UserStatusEnum::Pending->value)->count(); // Cache the count directly
         });
-
 
         $pending_approvals = [
             'leave_requests_count' => $pending_leave_requests,

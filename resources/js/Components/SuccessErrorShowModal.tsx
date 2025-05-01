@@ -45,7 +45,14 @@ export default function SuccessErrorShowModal({
                     leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                     leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                 >
-                    <DialogPanel role="alert" className="alert alert-error">
+                    <DialogPanel
+                        role="alert"
+                        className={`alert ${
+                            message.status === 200
+                                ? "alert-success"
+                                : "alert-error"
+                        }`}
+                    >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-6 w-6 shrink-0 stroke-current"
@@ -60,7 +67,9 @@ export default function SuccessErrorShowModal({
                             />
                         </svg>
                         <span className="text-wrap capitalize flex flex-col max-w-[60vw] max-h-[10vh] overflow-y-auto">
-                            {message.status === 500
+                            {message.status === 200
+                                ? message.message
+                                : message.status === 500
                                 ? "Internal Server Error"
                                 : Object.values(message.message)
                                       .flat()
