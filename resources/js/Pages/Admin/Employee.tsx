@@ -1,7 +1,7 @@
 import ActionButton from "@/Components/ActionButton";
 import CreateEmployee from "@/Components/Employee/CreateEmployee";
 import EmployeeModal from "@/Components/Employee/EmployeeModal";
-import ErrorShowModal from "@/Components/ErrorShowModal";
+import SuccessErrorShowModal from "@/Components/SuccessErrorShowModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Employee, EmployeeProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
@@ -285,7 +285,7 @@ const index = ({
             />
 
             {/* Error */}
-            <ErrorShowModal
+            <SuccessErrorShowModal
                 show={showErrorModal}
                 message={errorMessage}
                 onClose={() => setShowErrorModal(false)}

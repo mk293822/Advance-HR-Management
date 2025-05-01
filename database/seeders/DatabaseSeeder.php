@@ -71,14 +71,23 @@ class DatabaseSeeder extends Seeder
             ->sequence(fn($sequence) => ["name" => $positions[$sequence->index]])
             ->create();
 
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'minkhant',
             'email' => 'mkt293822@gmail.com',
             'role_id' => Role::where('name', RoleEnum::ADMIN->value)->first()->id,
             'date_of_birth' => '1998-04-26',
         ]);
 
-        User::factory(10)->create();
+        $user->assignRole(Role::where('name', RoleEnum::ADMIN->value)->first());
+
+        $users = User::factory(10)->create();
+
+        $users->each(function ($user) {
+            $user->update([
+                'role_id' => Role::where('name', RoleEnum::EMPLOYEE->value)->first()->id,
+            ]);
+            $user->assignRole(Role::where('name', RoleEnum::EMPLOYEE->value)->first());
+        });
 
         $employee_ids = User::inRandomOrder()
             ->limit(count($departmentNames))

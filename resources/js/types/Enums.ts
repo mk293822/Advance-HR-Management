@@ -37,9 +37,9 @@ export enum Status {
 }
 
 export enum Approving {
-    APPROVED = "Approved",
-    REJECTED = "Rejected",
-    PENDING = "Pending",
+    APPROVED = "approved",
+    REJECTED = "rejected",
+    PENDING = "pending",
 }
 
 export enum Gender {

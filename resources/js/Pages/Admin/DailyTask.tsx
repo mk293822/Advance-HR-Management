@@ -2,7 +2,6 @@ import {
     CalendarDaysIcon,
     UserGroupIcon,
     ClipboardDocumentListIcon,
-    BellAlertIcon,
     CakeIcon,
 } from "@heroicons/react/24/outline";
 import AdminLayout from "@/Layouts/AdminLayout";
@@ -18,8 +17,8 @@ import { AttendanceEnum } from "@/types/Enums";
 import { stat } from "fs";
 import axios from "axios";
 import { useState } from "react";
-import ErrorShowModal from "@/Components/ErrorShowModal";
 import clsx from "clsx";
+import SuccessErrorShowModal from "@/Components/SuccessErrorShowModal";
 
 const DailyTasks = ({
     attendances,
@@ -406,7 +405,7 @@ const DailyTasks = ({
             </div>
 
             {/* Modals */}
-            <ErrorShowModal
+            <SuccessErrorShowModal
                 show={showErrorModal}
                 message={errorMessage}
                 onClose={() => setShowErrorModal(false)}

@@ -30,6 +30,7 @@ class DashboardController extends Controller
     {
 
         $chart_type = $request->query('chart', 'day');
+        $event_type = $request->query('event_type', 'upcoming');
 
         $pending_approvals = $service->getPendingApprovals();
         $leave_requests = $service->getRecentLeaveRequests($request);
@@ -45,6 +46,7 @@ class DashboardController extends Controller
             'upcoming_events' => $upcoming_events,
             'attendances' => $attendances,
             'chart_type' => $chart_type,
+                'event_type' => $event_type,
             ]
         ));
     }
@@ -56,7 +58,7 @@ class DashboardController extends Controller
      */
     public function event_store(UpcomingEventRequest $request)
     {
-        $this->handleCache->clear(['upcoming_events_dashboard', 'today_upcoming_events']);
+        $this->handleCache->clear(['upcoming_events_dashboard_' . $request->query('event_type', 'upcoming'), 'today_upcoming_events']);
 
         $user = Auth::user();
         $validate = $request->validated();
@@ -80,7 +82,7 @@ class DashboardController extends Controller
     public function event_update(UpcomingEventRequest $request, string $id)
     {
 
-        $this->handleCache->clear(['upcoming_events_dashboard', 'today_upcoming_events']);
+        $this->handleCache->clear(['upcoming_events_dashboard_' . $request->query('event_type', 'upcoming'), 'today_upcoming_events']);
 
         $user = Auth::user();
         $event = UpcomingEvents::findOrFail($id);
@@ -98,9 +100,9 @@ class DashboardController extends Controller
         ], 200);
     }
 
-    public function event_destroy(string $id)
+    public function event_destroy(Request $request, string $id)
     {
-        $this->handleCache->clear(['upcoming_events_dashboard', 'today_upcoming_events']);
+        $this->handleCache->clear(['upcoming_events_dashboard_' . $request->query('event_type', 'upcoming'), 'today_upcoming_events']);
 
         $event = UpcomingEvents::findOrFail($id);
 

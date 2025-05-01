@@ -67,16 +67,6 @@ class DailyTaskAutomation implements ShouldQueue
                 }
             }
 
-
-            //  Delete event that is done
-            $events = UpcomingEvents::where('end_date', '<', $today)->get();
-
-            if($events->isNotEmpty()) {
-                foreach ($events as $event) {
-                    $event->delete();
-                }
-            }
-
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Head, Link } from "@inertiajs/react";
 import { DashboardProps, LeaveRequest, UpcomingEvent } from "@/types/Admin";
 import AdminLayout from "@/Layouts/AdminLayout";
 import UpcomingEventModal from "@/Components/UpcomingEvent/UpcomingEventModal";
-import ActionButton from "@/Components/ActionButton";
 import CreateEvent from "@/Components/UpcomingEvent/CreateEvent";
 import axios from "axios";
 import AttendanceChart from "@/Components/Parts/AttendanceChart";
-import ErrorShowModal from "@/Components/ErrorShowModal";
+import SuccessErrorShowModal from "@/Components/SuccessErrorShowModal";
+import UpcomingEventsTable from "@/Components/UpcomingEvent/UpcomingEventsTable";
 
 export default function Dashboard({
     employee_count,
@@ -18,6 +18,7 @@ export default function Dashboard({
     upcoming_events,
     attendances,
     chart_type,
+    event_type,
 }: DashboardProps) {
     const pendingItems = [
         {
@@ -37,14 +38,12 @@ export default function Dashboard({
         },
     ].filter((item) => item.count > 0);
 
-    const [pendingTasks, setPendingTasks] =
+    const [pendingTasks] =
         useState<Array<{ value: string; type: string; count: number }>>(
             pendingItems
         );
 
-    const [leaveRequests, setLeaveRequests] = useState<
-        Array<LeaveRequest & { date: string }>
-    >(
+    const [leaveRequests] = useState<Array<LeaveRequest & { date: string }>>(
         leave_requests.map((request) => ({
             ...request,
             date: `${new Date(
@@ -71,6 +70,10 @@ export default function Dashboard({
         message: "",
         status: 0,
     });
+
+    useEffect(() => {
+        setLocalUpcomingEvents(upcoming_events);
+    }, [upcoming_events]);
 
     // cards
     const cards: Array<{ title: string; count: number; color: string }> = [
@@ -252,7 +255,7 @@ export default function Dashboard({
                             Pending Tasks
                         </h2>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            {pendingTasks.length > 0 &&
+                            {pendingTasks.length > 0 ? (
                                 pendingTasks.map((task, index) => (
                                     <li
                                         key={index}
@@ -266,58 +269,22 @@ export default function Dashboard({
                                             Review
                                         </Link>
                                     </li>
-                                ))}
+                                ))
+                            ) : (
+                                <li className="text-center text-gray-500">
+                                    No pending tasks
+                                </li>
+                            )}
                         </ul>
                     </div>
                 </div>
                 {/* Upcoming Events */}
-                <div className="bg-gray-800 rounded-lg shadow p-6 pt-4">
-                    <div className="flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 rounded-lg shadow-md mb-4">
-                        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
-                            Events
-                        </h2>
-                        <ActionButton
-                            color="blue"
-                            onClick={() => setOpenCreateEventModal(true)}
-                        >
-                            + Add Event
-                        </ActionButton>
-                    </div>
-
-                    <ul className="text-sm text-gray-300 max-h-80 overflow-y-auto divide-y divide-gray-700">
-                        {localUpcomingEvents.map((event, index) => (
-                            <li
-                                onClick={() => handleUpcomingEventClick(event)}
-                                key={index}
-                                className="flex flex-col hover:bg-gray-700 sm:flex-row justify-between items-start sm:items-center py-3 px-2 rounded-lg transition-colors"
-                            >
-                                <span className="font-medium text-white">
-                                    {event.title}
-                                </span>
-                                <div className="text-xs sm:text-sm text-gray-400 flex mt-1 sm:mt-0 sm:text-right">
-                                    <span className="block lg:hidden">
-                                        At{" "}
-                                        <span className="text-blue-400">
-                                            {event.start_date}
-                                        </span>
-                                    </span>
-                                    <span className="hidden lg:block">
-                                        from{" "}
-                                        <span className="text-blue-400">
-                                            {event.start_date}
-                                        </span>
-                                    </span>
-                                    <span className="hidden lg:block ml-0 sm:ml-2">
-                                        to{" "}
-                                        <span className="text-green-400">
-                                            {event.end_date}
-                                        </span>
-                                    </span>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <UpcomingEventsTable
+                    localUpcomingEvents={localUpcomingEvents}
+                    event_type={event_type}
+                    handleAddEventClick={() => setOpenCreateEventModal(true)}
+                    handleUpcomingEventClick={handleUpcomingEventClick}
+                />
             </main>
 
             {/* Modals */}
@@ -347,7 +314,7 @@ export default function Dashboard({
             />
 
             {/* Error */}
-            <ErrorShowModal
+            <SuccessErrorShowModal
                 show={showErrorModal}
                 message={errorMessage}
                 onClose={() => setShowErrorModal(false)}

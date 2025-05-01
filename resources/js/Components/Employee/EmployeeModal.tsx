@@ -21,6 +21,21 @@ const EmployeeModal: React.FC<Props> = ({
 }) => {
     if (!show || !employee) return null;
 
+    const status_bg_color = () => {
+        switch (employee.status) {
+            case "Active":
+                return "bg-green-600 text-white";
+            case "Inactive":
+                return "bg-yellow-500 text-white";
+            case "Suspended":
+                return "bg-red-600 text-white";
+            case "Pending":
+                return "bg-blue-600 text-white";
+            default:
+                return "bg-gray-500 text-white";
+        }
+    };
+
     return (
         <Modal onClose={onClose} show={show}>
             <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
@@ -46,17 +61,7 @@ const EmployeeModal: React.FC<Props> = ({
                 <div>
                     <span className="block text-gray-400 mb-1">Status</span>
                     <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                            employee.status === "Active"
-                                ? "bg-green-600 text-white"
-                                : employee.status === "Inactive"
-                                ? "bg-yellow-500 text-white"
-                                : employee.status === "Suspended"
-                                ? "bg-red-600 text-white"
-                                : employee.status === "Pending"
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-500 text-white"
-                        }`}
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${status_bg_color()}`}
                     >
                         {employee.status}
                     </span>

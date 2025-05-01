@@ -10,6 +10,7 @@ use App\Models\Department;
 use App\Models\LeaveRequest;
 use App\Models\UpcomingEvents;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 class DashboardService
 {
@@ -70,16 +71,21 @@ class DashboardService
 
     public function getUpcomingEvents($request)
     {
+
+        $event_type = $request->query('event_type', 'upcoming');
+
         // Upcoming Events - Cache
-        $upcoming_events = $this->handleCache->remember('upcoming_events_dashboard',  null, function () use ($request) {
+        return $this->handleCache->remember('upcoming_events_dashboard_' . $event_type,  null, function () use ($request, $event_type) {
+            if ($event_type === 'upcoming') {
+                return UpcomingEventResource::collection(UpcomingEvents::where('end_date', '>=', Carbon::today()->timezone('Asia/Yangon')->format('Y-m-d'))->orderBy('start_date')->get())->toArray($request); // Ensure toArray() is called here
+            }
             return UpcomingEventResource::collection(UpcomingEvents::orderBy('start_date')->get())->toArray($request); // Ensure toArray() is called here
         });
-
-        return $upcoming_events;
     }
 
     public function getAllAttendances(string $chart_type)
     {
+        $chart_type = $chart_type ?? 'day';
         // Attendance tracking - Cache
         $all_attendances = $this->handleCache->remember('all_attendances_dashboard',  null, function () {
             return Attendance::whereYear('date', now()->year)
@@ -88,13 +94,15 @@ class DashboardService
                 ->toArray(); // Convert to array before caching
         });
 
-         $attendances = [];
+        $attendances = [];
 
         if ($chart_type === 'day') {
-            $attendances = collect($all_attendances)->whereBetween('date', [
-                now()->startOfMonth()->toDateString(),
-                now()->endOfMonth()->toDateString()
-            ]);
+            $attendances = collect($all_attendances)->filter(function ($item) {
+                $date = $item['date'];
+                $start = now()->startOfMonth()->toDateString();
+                $end = now()->endOfMonth()->toDateString();
+                return $date >= $start && $date <= $end;
+            });
         } elseif ($chart_type === 'month') {
             $attendances = $all_attendances;
         }
@@ -107,6 +115,7 @@ class DashboardService
                     ];
                 })->toArray();
         });
+
 
         return $attendances;
     }

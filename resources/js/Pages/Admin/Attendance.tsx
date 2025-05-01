@@ -1,6 +1,6 @@
 import AttendanceModal from "@/Components/Attendance/AttendanceModal";
 import CreateAttendance from "@/Components/Attendance/CreateAttendance";
-import ErrorShowModal from "@/Components/ErrorShowModal";
+import SuccessErrorShowModal from "@/Components/SuccessErrorShowModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { AttendanceType, AttendanceProps } from "@/types/Admin";
 import { Head, router } from "@inertiajs/react";
@@ -241,7 +241,7 @@ const Attendance = ({ attendances, links }: AttendanceProps) => {
                 onCreate={handleCreateAttendance}
             />
             {/* Error */}
-            <ErrorShowModal
+            <SuccessErrorShowModal
                 show={showErrorModal}
                 message={errorMessage}
                 onClose={() => setShowErrorModal(false)}

@@ -31,29 +31,6 @@ const Settings = () => {
                     </div>
                 </div>
 
-                {/* Other Settings */}
-                <div className="bg-gray-800 p-6 rounded-xl shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4">
-                        Other Settings
-                    </h2>
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <span>Enable Dark Mode</span>
-                            <input
-                                type="checkbox"
-                                className="form-checkbox text-blue-500"
-                            />
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span>Language</span>
-                            <select className="p-2 bg-gray-700 text-white rounded-md">
-                                <option>English</option>
-                                <option>Spanish</option>
-                                <option>French</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
             </div>
         </AdminLayout>
     );

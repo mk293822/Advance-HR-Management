@@ -17,11 +17,18 @@ class DepartmentService
         $this->handleCache = new HandleCache();
     }
 
+    public function getPaginationLinks($request)
+    {
+        return $this->handleCache->remember('department_links_page_' . $request->page, null, function () {
+            return Department::orderByDesc('created_at')->paginate(100)->linkCollection();
+        });
+    }
+
     public function getDepartments($request)
     {
-        return $this->handleCache->remember('departments', null, function () use ($request) {
-                return DepartmentResource::collection(Department::all())->toArray($request); // Cache the result of the collection conversion
-            });
+        return $this->handleCache->remember('departments_page' . $request->page, null, function () use ($request) {
+            return DepartmentResource::collection(Department::orderByDesc('created_at')->paginate(100))->toArray($request); // Cache the result of the collection conversion
+        });
     }
 
     public function getUsers()

@@ -11,6 +11,7 @@ export type DashboardProps = {
     leave_requests: LeaveRequest[];
     attendances: AttendanceType[];
     chart_type: "day" | "month";
+    event_type: "upcoming" | "all";
 };
 
 // Pending Approvals
@@ -149,6 +150,6 @@ export type LeaveRequest = {
     reason: string;
     status: "pending" | "approved" | "rejected";
     approved_by: number | null;
-    created_at: string; // DateTime string
-    updated_at: string; // DateTime string
+    created_at?: string; // DateTime string
+    updated_at?: string; // DateTime string
 };

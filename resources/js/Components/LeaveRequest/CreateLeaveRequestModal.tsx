@@ -1,38 +1,37 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../Modal";
 import ActionButton from "../ActionButton";
-import { AttendanceType } from "@/types/Admin";
-import { AttendanceEnum } from "@/types/Enums";
+import { LeaveRequest } from "@/types/Admin";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    onCreate: (data: AttendanceType) => void;
-    editData?: AttendanceType | null;
+    onCreate: (data: LeaveRequest) => void;
+    editData?: LeaveRequest | null;
     isEdit?: boolean;
 }
 
-export default function CreateAttendance({
+export default function CreateLeaveRequestModal({
     isOpen,
     onClose,
     onCreate,
     editData,
     isEdit = false,
 }: Props) {
-    const initialForm: AttendanceType = {
+    const initialForm: LeaveRequest = {
         id: 0,
-        employee: {
-            full_name: "",
-            employee_id: "",
-        },
-        status: "",
-        date: "",
-        check_in: "",
-        check_out: "",
-        remark: "",
+        user_id: 0,
+        employee_id: "",
+        employee_name: "",
+        start_date: "",
+        end_date: "",
+        leave_type: "Casual",
+        reason: "",
+        status: "pending",
+        approved_by: null,
     };
 
-    const [formData, setFormData] = useState(initialForm);
+    const [formData, setFormData] = useState<LeaveRequest>(initialForm);
 
     useEffect(() => {
         if (isEdit && editData) {
@@ -48,20 +47,10 @@ export default function CreateAttendance({
         >
     ) => {
         const { name, value } = e.target;
-        if (name === "employee_id" || name === "full_name") {
-            setFormData((prev) => ({
-                ...prev,
-                employee: {
-                    ...prev.employee,
-                    [name]: value,
-                },
-            }));
-        } else {
-            setFormData((prev) => ({
-                ...prev,
-                [name]: value,
-            }));
-        }
+        setFormData((prev) => ({
+            ...prev,
+            [name]: e.target.type === "number" ? Number(value) : value,
+        }));
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -77,50 +66,36 @@ export default function CreateAttendance({
     };
 
     const fields = [
-        { label: "Employee ID", name: "employee_id", type: "text" },
-        { label: "Full Name", name: "full_name", type: "text" },
+        { label: "Start Date", name: "start_date", type: "date" },
+        { label: "End Date", name: "end_date", type: "date" },
+        { label: "Leave Type", name: "leave_type", type: "text" },
         {
             label: "Status",
             name: "status",
             type: "select",
-            options: Object.entries(AttendanceEnum).map(([key, value]) => ({
-                label:
-                    key.charAt(0) +
-                    key.slice(1).toLowerCase().replace("_", " "),
-                value: value,
-            })),
+            options: [
+                { label: "Pending", value: "pending" },
+                { label: "Approved", value: "approved" },
+                { label: "Rejected", value: "rejected" },
+            ],
         },
-        { label: "Date", name: "date", type: "date" },
-        { label: "Check In", name: "check_in", type: "time" },
-        { label: "Check Out", name: "check_out", type: "time" },
-        { label: "Remark", name: "remark", type: "textarea" },
+        { label: "Reason", name: "reason", type: "textarea" },
     ];
 
     const input_types = (field: {
         name: string;
         type: string;
-        options?: Array<{
-            label: string;
-            value: string;
-        }>;
+        options?: Array<{ label: string; value: string }>;
     }) => {
+        const value = String(
+            formData[field.name as keyof LeaveRequest] ?? ""
+        );
+
         if (field.type === "textarea") {
             return (
                 <textarea
                     name={field.name}
-                    value={
-                        field.name in formData.employee
-                            ? String(
-                                  formData.employee[
-                                      field.name as keyof typeof formData.employee
-                                  ] || ""
-                              )
-                            : String(
-                                  formData[
-                                      field.name as keyof AttendanceType
-                                  ] || ""
-                              )
-                    }
+                    value={value}
                     onChange={handleChange}
                     className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
                     rows={3}
@@ -147,22 +122,11 @@ export default function CreateAttendance({
                 <input
                     type={field.type}
                     name={field.name}
-                    value={
-                        field.name in formData.employee
-                            ? String(
-                                  formData.employee[
-                                      field.name as keyof typeof formData.employee
-                                  ] || ""
-                              )
-                            : String(
-                                  formData[
-                                      field.name as keyof AttendanceType
-                                  ] || ""
-                              )
-                    }
+                    value={value}
                     onChange={handleChange}
                     required={
-                        field.name !== "check_in" && field.name !== "check_out"
+                        field.name !== "approved_by" &&
+                        field.name !== "attendance_id"
                     }
                     className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
                 />
@@ -173,13 +137,31 @@ export default function CreateAttendance({
     return (
         <Modal onClose={handleClose} show={isOpen}>
             <h2 className="text-2xl font-semibold text-white mb-6">
-                {isEdit ? "Edit Attendance" : "Create New Attendance"}
+                {isEdit ? "Edit Leave Request" : "Create Leave Request"}
             </h2>
             <form
                 onSubmit={handleSubmit}
                 className="space-y-5 max-h-[80vh] overflow-y-auto pr-2"
             >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="name">Name:</label>
+                        <input
+                            type="text"
+                            value={formData.employee_name}
+                            readOnly
+                            className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="name">Employee Id:</label>
+                        <input
+                            type="text"
+                            value={formData.employee_id}
+                            readOnly
+                            className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
                     {fields.map((field) => (
                         <div
                             key={field.name}

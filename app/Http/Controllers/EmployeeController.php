@@ -55,7 +55,8 @@ class EmployeeController extends Controller
     {
 
         $this->handleCache->clear([
-            'all_employees_employee',
+            'all_employees_employee_page' . $request->page,
+            'employee_links_page_' . $request->page,
             'all_departments_employee',
             'all_roles_employee',
             'all_birthday_users',
@@ -96,8 +97,9 @@ class EmployeeController extends Controller
      */
     public function update(EmployeeRequest $request, string $id)
     {
-         $this->handleCache->clear([
-            'all_employees_employee',
+        $this->handleCache->clear([
+            'all_employees_employee_page' . $request->page,
+            'employee_links_page_' . $request->page,
             'all_departments_employee',
             'all_roles_employee',
             'all_birthday_users',
@@ -142,17 +144,17 @@ class EmployeeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-         $this->handleCache->clear([
-            'all_employees_employee',
+        $this->handleCache->clear([
+            'all_employees_employee_page' . $request->page,
+            'employee_links_page_' . $request->page,
             'all_departments_employee',
             'all_roles_employee',
             'all_birthday_users',
             'birthday_users_today',
             'all_positions_employee',
-            'pending_employees_dashboard',
-            'employee_count_dashboard'
+            'pending_employees_dashboard'
         ]);
         // Find the employee by ID
         DB::beginTransaction();

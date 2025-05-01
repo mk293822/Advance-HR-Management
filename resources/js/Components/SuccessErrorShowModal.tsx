@@ -13,7 +13,7 @@ interface ErrorModalProps {
     duration?: number; // in milliseconds (optional)
 }
 
-export default function ErrorShowModal({
+export default function SuccessErrorShowModal({
     show,
     message,
     onClose,

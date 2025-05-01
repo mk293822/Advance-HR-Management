@@ -9,6 +9,7 @@ interface Props {
     onClose: () => void;
     onApprove: () => void;
     onReject: () => void;
+    onEdit: () => void;
 }
 
 export default function LeaveRequestModal({
@@ -17,6 +18,7 @@ export default function LeaveRequestModal({
     onClose,
     onApprove,
     onReject,
+    onEdit,
 }: Props) {
     if (!isOpen) return null;
 
@@ -33,7 +35,7 @@ export default function LeaveRequestModal({
                 <Detail label="Type" value={leave.leave_type} />
                 <Detail label="From" value={leave.start_date} />
                 <Detail label="To" value={leave.end_date} />
-                <Detail label="Requested At" value={leave.created_at} />
+                <Detail label="Requested At" value={leave.created_at ?? ""} />
                 <div>
                     <p className="text-gray-400 mb-1">Status</p>
                     <span
@@ -42,7 +44,7 @@ export default function LeaveRequestModal({
                                 ? "bg-green-600 text-white"
                                 : leave.status === "rejected"
                                 ? "bg-red-600 text-white"
-                                : "bg-yellow-500 text-white"
+                                : leave.status === "pending" && "bg-yellow-600"
                         }`}
                     >
                         {leave.status}
@@ -65,6 +67,9 @@ export default function LeaveRequestModal({
                         Reject
                     </ActionButton>
                 )}
+                <ActionButton onClick={onEdit} color="yellow">
+                    Edit
+                </ActionButton>
                 <ActionButton onClick={onClose} color="gray">
                     Close
                 </ActionButton>

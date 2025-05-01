@@ -36,10 +36,13 @@ class DepartmentController extends Controller
 
         $users = $service->getUsers();
 
+        $pagination_links = $service->getPaginationLinks($request);
+
         return Inertia::render("Admin/Department", [
             'departments' => $departments,
             'users' => $users,
-            'header_ids' => $header_ids
+            'header_ids' => $header_ids,
+            'pagination_links' => $pagination_links,
         ]);
     }
 
@@ -50,12 +53,13 @@ class DepartmentController extends Controller
     {
 
         $this->handleCache->clear([
-            'departments',
+            'departments_page' . $request->page,
+            'department_links_page_' . $request->page,
             'users_department',
             'header_ids_department',
             'pending_departments_dashboard',
             'department_count_dashboard',
-            'all_departments_employee'
+            'all_departments_employee',
         ]);
 
         DB::beginTransaction();
@@ -106,12 +110,13 @@ class DepartmentController extends Controller
     {
 
         $this->handleCache->clear([
-            'departments',
+            'departments_page' . $request->page,
+            'department_links_page_' . $request->page,
             'users_department',
             'header_ids_department',
             'pending_departments_dashboard',
             'department_count_dashboard',
-            'all_departments_employee'
+            'all_departments_employee',
         ]);
         // Validate the request data
         $validatedData = $request->validated();
@@ -151,16 +156,17 @@ class DepartmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
 
         $this->handleCache->clear([
-            'departments',
+            'departments_page' . $request->page,
+            'department_links_page_' . $request->page,
             'users_department',
             'header_ids_department',
             'pending_departments_dashboard',
             'department_count_dashboard',
-            'all_departments_employee'
+            'all_departments_employee',
         ]);
 
         $department = Department::findOrFail($id);

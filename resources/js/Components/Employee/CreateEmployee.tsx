@@ -52,16 +52,16 @@ export default function CreateEmployee({
                 email: editData.email || "",
                 first_name: editData.first_name || "",
                 last_name: editData.last_name || "",
-                phone: editData.phone || "",
+                phone: editData.phone ?? "",
                 password: "",
-                gender: editData.gender || "",
-                date_of_birth: editData.date_of_birth || "",
-                address: editData.address?.replace(/\\n/g, "\n") || "",
+                gender: editData.gender ?? "",
+                date_of_birth: editData.date_of_birth ?? "",
+                address: editData.address?.replace(/\\n/g, "\n") ?? "",
                 department: editData?.department?.id?.toString() ?? "",
                 position: editData.position.id.toString() || "",
                 role: editData.role.id.toString() || "",
                 date_hired: editData.date_hired || "",
-                salary: editData.salary?.toString() || "",
+                salary: editData.salary?.toString() ?? "",
                 status: editData.status || "",
             });
         } else {
@@ -128,37 +128,30 @@ export default function CreateEmployee({
     ];
 
     const renderField = (field: string) => {
-        const type = field.includes("date")
-            ? "date"
-            : field === "password"
-            ? "password"
-            : field === "salary"
-            ? "number"
-            : field === "email"
-            ? "email"
-            : field === "address"
-            ? "textarea"
-            : ["status", "position", "role", "department", "gender"].includes(
-                  field
-              )
-            ? "select"
-            : "text";
+        const getFieldType = (field: string): string => {
+            if (field.includes("date")) return "date";
+            if (field === "password") return "password";
+            if (field === "salary") return "number";
+            if (field === "email") return "email";
+            if (field === "address") return "textarea";
+            if (
+                ["status", "position", "role", "department", "gender"].includes(
+                    field
+                )
+            )
+                return "select";
+            return "text";
+        };
+
+        const type = getFieldType(field);
 
         const label = field
             .replace(/_/g, " ")
             .replace(/\b\w/g, (l) => l.toUpperCase());
 
-        return (
-            <div
-                key={field}
-                className={`${
-                    type === "textarea" ? "md:col-span-2" : ""
-                } flex flex-col`}
-            >
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                    {label}
-                </label>
-                {type === "textarea" ? (
+        const renderInputField = () => {
+            if (type === "textarea") {
+                return (
                     <textarea
                         name={field}
                         value={formData[field as keyof typeof formData]}
@@ -167,7 +160,9 @@ export default function CreateEmployee({
                         rows={3}
                         required
                     />
-                ) : type === "select" ? (
+                );
+            } else if (type === "select") {
+                return (
                     <select
                         name={field}
                         value={formData[field as keyof typeof formData]}
@@ -207,7 +202,9 @@ export default function CreateEmployee({
                                 </option>
                             ))}
                     </select>
-                ) : (
+                );
+            } else {
+                return (
                     <input
                         type={type}
                         name={field}
@@ -216,7 +213,21 @@ export default function CreateEmployee({
                         className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
                         required
                     />
-                )}
+                );
+            }
+        };
+
+        return (
+            <div
+                key={field}
+                className={`${
+                    type === "textarea" ? "md:col-span-2" : ""
+                } flex flex-col`}
+            >
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                    {label}
+                </label>
+                {renderInputField()}
             </div>
         );
     };

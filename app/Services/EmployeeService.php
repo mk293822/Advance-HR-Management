@@ -19,10 +19,17 @@ class EmployeeService
         $this->handleCache = new HandleCache();
     }
 
+    public function getPaginationLinks($request)
+    {
+        return $this->handleCache->remember('employee_links_page_' . $request->page, null, function () {
+            return User::orderByDesc('created_at')->paginate(100)->linkCollection();
+        });
+    }
+
     public function getEmployees($request)
     {
-        return $this->handleCache->remember('all_employees_employee', null, function () use ($request) {
-            return UserResource::collection(User::all())->toArray($request); // Cache the result of the collection conversion
+        return $this->handleCache->remember('all_employees_employee_page' . $request->page, null, function () use ($request) {
+            return UserResource::collection(User::orderByDesc('created_at')->paginate(100))->toArray($request); // Cache the result of the collection conversion
         });
     }
 

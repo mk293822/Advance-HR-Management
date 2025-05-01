@@ -1,5 +1,7 @@
-import ErrorShowModal from "@/Components/ErrorShowModal";
+import CreateLeaveRequestModal from "@/Components/LeaveRequest/CreateLeaveRequestModal";
 import LeaveRequestModal from "@/Components/LeaveRequest/LeaveRequestModal";
+import LeaveRequestTable from "@/Components/LeaveRequest/LeaveRequestTable";
+import SuccessErrorShowModal from "@/Components/SuccessErrorShowModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { LeaveRequest, LeaveRequestProps } from "@/types/Admin";
 import { Head } from "@inertiajs/react";
@@ -16,6 +18,8 @@ export default function LeaveRequestsPage({
     const [localLeaveRequests, setLocalLeaveRequests] =
         useState<LeaveRequest[]>(leave_requests);
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isOpenCreateModal, setIsOpenCreateModal] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
 
     const [showErrorModal, setShowErrorModal] = useState(false);
     const [errorMessage, setErrorMessage] = useState<{
@@ -56,7 +60,7 @@ export default function LeaveRequestsPage({
         id: number;
     }) => {
         axios
-            .put(route("leaveRequests.approving", id), { type: type })
+            .put(route("leaveRequests.update", id), { status: type })
             .then((res) => {
                 if (res.data.status === "success") {
                     setLocalLeaveRequests((pre) =>
@@ -77,10 +81,50 @@ export default function LeaveRequestsPage({
             });
     };
 
+    // handle Create Leave Requests
+    const handleCreateLeaveRequest = (data: LeaveRequest) => {
+        console.log(data, isEdit);
+        const request = isEdit
+            ? axios.put(route("leaveRequests.update", selectedLeave?.id), data)
+            : axios.post(route("leaveRequests.store"), data);
+
+        request
+            .then((res) => {
+                if (res.data.status === "success") {
+                    setLocalLeaveRequests((prev) => {
+                        let updated;
+                        if (isEdit && selectedLeave) {
+                            updated = prev.map((pre) =>
+                                pre.id === selectedLeave.id
+                                    ? res.data.data
+                                    : pre
+                            );
+                        } else {
+                            updated = [...prev, res.data.data];
+                        }
+
+                        return updated;
+                    });
+                }
+                setIsOpenCreateModal(false);
+                setSelectedLeave(null);
+            })
+            .catch((err) => {
+                setErrorMessage({
+                    message: err.response.data.errors,
+                    status: err.response.status,
+                });
+                setSelectedLeave(null);
+                setShowErrorModal(true);
+                setIsEdit(false);
+                setIsOpenCreateModal(false);
+                setIsModalOpen(false);
+            });
+    };
+
     return (
         <AdminLayout>
             <Head title="Leave Requests" />
-
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-bold text-white">
                     Leave Requests
@@ -113,103 +157,19 @@ export default function LeaveRequestsPage({
                 </div>
             </div>
 
-            <div className="w-full overflow-x-auto rounded-lg shadow max-w-full">
-                <table className="min-w-full text-xs lg:text-sm text-left text-gray-300 bg-gray-800">
-                    <thead className="bg-gray-700 text-xs uppercase text-gray-400">
-                        <tr>
-                            <th className="px-4 py-3">No</th>
-                            <th className="px-4 py-3">Employee Name</th>
-                            <th className="px-4 py-3 hidden md:table-cell">
-                                Leave Type
-                            </th>
-                            <th className="px-4 py-3 hidden xl:table-cell">
-                                From
-                            </th>
-                            <th className="px-4 py-3 hidden xl:table-cell">
-                                To
-                            </th>
-                            <th className="px-4 py-3">Status</th>
-                            <th className="px-4 py-3 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredLeaveRequests.map((leave, index) => (
-                            <tr
-                                key={index}
-                                className="border-b border-gray-700 hover:bg-gray-600"
-                                onClick={() => handleLeaveRequestClick(leave)}
-                            >
-                                <td className="px-4 py-3">{index + 1}</td>
-                                <td className="px-4 py-3">
-                                    {leave.employee_name}
-                                </td>
-                                <td className="px-4 py-3 hidden md:table-cell">
-                                    {leave.leave_type}
-                                </td>
-                                <td className="px-4 py-3 hidden xl:table-cell">
-                                    {leave.start_date}
-                                </td>
-                                <td className="px-4 py-3 hidden xl:table-cell">
-                                    {leave.end_date}
-                                </td>
-                                <td className="px-4 py-3">
-                                    <span
-                                        className={`px-2 py-1 text-xs text-white capitalize font-medium rounded-full ${
-                                            leave.status === "approved"
-                                                ? "bg-green-600"
-                                                : leave.status === "rejected"
-                                                ? "bg-red-600"
-                                                : "bg-yellow-600"
-                                        }`}
-                                    >
-                                        {leave.status}
-                                    </span>
-                                </td>
-                                <td className="py-3 text-center px-2 md:px-0">
-                                    {leave.status === "pending" && (
-                                        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRequestApprove({
-                                                        type: "approve",
-                                                        id: leave.id,
-                                                    });
-                                                }}
-                                                className="px-3 py-1 text-xs text-green-500 border border-green-500 rounded hover:bg-green-500 hover:text-white transition"
-                                            >
-                                                Approve
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRequestApprove({
-                                                        type: "reject",
-                                                        id: leave.id,
-                                                    });
-                                                }}
-                                                className="px-3 py-1 text-xs text-red-500 border border-red-500 rounded hover:bg-red-500 hover:text-white transition"
-                                            >
-                                                Reject
-                                            </button>
-                                        </div>
-                                    )}
-                                    {leave.status !== "pending" && (
-                                        <button className="px-3 w-24 py-1 text-xs text-yellow-500 border border-yellow-500 rounded hover:bg-yellow-500 hover:text-white transition">
-                                            Edit
-                                        </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
+            <LeaveRequestTable
+                filteredLeaveRequests={filteredLeaveRequests}
+                handleLeaveRequestClick={handleLeaveRequestClick}
+                handleRequestApprove={handleRequestApprove}
+            />
             {/* Modals */}
             {/* Leave Request Modal */}
             {selectedLeave && (
                 <LeaveRequestModal
+                    onEdit={() => {
+                        setIsOpenCreateModal(true);
+                        setIsEdit(true);
+                    }}
                     leave={selectedLeave}
                     isOpen={isModalOpen}
                     onClose={() => {
@@ -220,7 +180,7 @@ export default function LeaveRequestsPage({
                         // Handle approve action
                         setIsModalOpen(false);
                         handleRequestApprove({
-                            type: "approve",
+                            type: "approved",
                             id: selectedLeave.id,
                         });
                     }}
@@ -228,15 +188,27 @@ export default function LeaveRequestsPage({
                         // Handle reject action
                         setIsModalOpen(false);
                         handleRequestApprove({
-                            type: "reject",
+                            type: "rejected",
                             id: selectedLeave.id,
                         });
                     }}
                 />
             )}
-
+            {/* Create or Update LeaveREquest */}
+            <CreateLeaveRequestModal
+                isOpen={isOpenCreateModal}
+                onClose={() => {
+                    setIsOpenCreateModal(false);
+                    setSelectedLeave(null);
+                    setIsEdit(false);
+                    setIsModalOpen(false);
+                }}
+                onCreate={handleCreateLeaveRequest}
+                editData={selectedLeave}
+                isEdit={isEdit}
+            />
             {/* Error */}
-            <ErrorShowModal
+            <SuccessErrorShowModal
                 show={showErrorModal}
                 message={errorMessage}
                 onClose={() => setShowErrorModal(false)}

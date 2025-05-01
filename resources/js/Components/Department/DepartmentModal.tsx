@@ -26,6 +26,21 @@ const DepartmentModal: React.FC<Props> = ({
 }) => {
     if (!show || !department) return null;
 
+    const status_bg_color = () => {
+        switch (department.status) {
+            case "Active":
+                return "bg-green-600 text-white";
+            case "Inactive":
+                return "bg-yellow-500 text-white";
+            case "Suspended":
+                return "bg-red-600 text-white";
+            case "Pending":
+                return "bg-blue-600 text-white";
+            default:
+                return "bg-gray-500 text-white";
+        }
+    };
+
     return (
         <Modal onClose={onClose} show={show}>
             <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
@@ -36,7 +51,7 @@ const DepartmentModal: React.FC<Props> = ({
                 <Detail label="Name" value={department.name} />
                 <Detail
                     label="Header"
-                    value={header?.full_name || "No Header"}
+                    value={header?.full_name ?? "No Header"}
                 />
                 <Detail
                     label="Employees Count"
@@ -45,17 +60,7 @@ const DepartmentModal: React.FC<Props> = ({
                 <div>
                     <span className="block text-gray-400 mb-1">Status</span>
                     <span
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                            department.status === "Active"
-                                ? "bg-green-600 text-white"
-                                : department.status === "Inactive"
-                                ? "bg-yellow-500 text-white"
-                                : department.status === "Suspended"
-                                ? "bg-red-600 text-white"
-                                : department.status === "Pending"
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-500 text-white"
-                        }`}
+                        className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${status_bg_color()}`}
                     >
                         {department.status}
                     </span>

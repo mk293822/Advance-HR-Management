@@ -11,7 +11,7 @@ use App\Http\Controllers\SettingsController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     // Dashboard Routes
     Route::get("/", [DashboardController::class, "index"])->name("dashboard");
 
@@ -21,7 +21,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete("/UpcomingEvent/{id}", [DashboardController::class, "event_destroy"])->name("upcomingEvent.destroy");
 
     // Daily Tasks
-    Route::get("/DailyTasks", [DailyTaskController::class, "index"])->name("dailyTasks");
+    Route::get("/DailyTasks", [DailyTaskController::class, "index"])->name("dailyTasks")->middleware(['role:admin']);
 
     // Employee Management Routes
     Route::apiResource('employees', EmployeeController::class)->only([
@@ -53,7 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get("/LeaveRequests", [LeaveRequestController::class, "index"])->name("leaveRequests");
 
     // Leave Request Approving Routes
-    Route::put('/LeaveRequests/approving/{id}', [LeaveRequestController::class, 'approving'])->name("leaveRequests.approving");
+    Route::put('/LeaveRequests/{id}', [LeaveRequestController::class, 'update'])->name("leaveRequests.update");
 
     // Department Management Routes
     Route::apiResource('departments', DepartmentController::class)->only([
@@ -73,10 +73,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware('auth')->prefix('profile')->group(function () {
+    Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';

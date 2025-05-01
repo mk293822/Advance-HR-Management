@@ -12,10 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class RecordAttendance
 {
-    public function __construct()
-    {
-        //
-    }
+
 
     public function update($id, $validatedData)
     {

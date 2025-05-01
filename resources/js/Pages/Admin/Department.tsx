@@ -1,7 +1,7 @@
 import ActionButton from "@/Components/ActionButton";
 import CreateDepartment from "@/Components/Department/CreateDepartment";
 import DepartmentModal from "@/Components/Department/DepartmentModal";
-import ErrorShowModal from "@/Components/ErrorShowModal";
+import SuccessErrorShowModal from "@/Components/SuccessErrorShowModal";
 import AdminLayout from "@/Layouts/AdminLayout";
 import { Department, DepartmentProps } from "@/types/Admin";
 import { Status } from "@/types/Enums";
@@ -294,7 +294,7 @@ export default function DepartmentsPage({
             />
 
             {/* Error Modal */}
-            <ErrorShowModal
+            <SuccessErrorShowModal
                 show={showErrorModal}
                 message={errorMessage}
                 onClose={() => setShowErrorModal(false)}

@@ -19,6 +19,23 @@ const AttendanceModal: React.FC<Props> = ({
 }) => {
     if (!show || !attendance) return null;
 
+    const getStatusClass = (status: string) => {
+        switch (status) {
+            case "present":
+                return "bg-green-600 text-white";
+            case "absent":
+                return "bg-red-600 text-white";
+            case "leave":
+                return "bg-yellow-500 text-white";
+            case "late":
+                return "bg-orange-500 text-white";
+            case "half_day":
+                return "bg-blue-600 text-white";
+            default:
+                return "bg-gray-500 text-white";
+        }
+    };
+
     return (
         <Modal onClose={onClose} show={show}>
             <div className="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
@@ -44,19 +61,9 @@ const AttendanceModal: React.FC<Props> = ({
                 <div>
                     <span className="block text-gray-400 mb-1">Status</span>
                     <span
-                        className={`inline-block px-3 py-1 text-xs font-medium uppercase tracking-wide rounded-full shadow-sm transition duration-300 ${
-                            attendance.status === "present"
-                                ? "bg-green-600 text-white"
-                                : attendance.status === "absent"
-                                ? "bg-red-600 text-white"
-                                : attendance.status === "leave"
-                                ? "bg-yellow-500 text-white"
-                                : attendance.status === "late"
-                                ? "bg-orange-500 text-white"
-                                : attendance.status === "half_day"
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-500 text-white"
-                        }`}
+                        className={`inline-block px-3 py-1 text-xs font-medium uppercase tracking-wide rounded-full shadow-sm transition duration-300 ${getStatusClass(
+                            attendance.status
+                        )}`}
                     >
                         {attendance.status.replace(/_/g, " ").toUpperCase()}
                     </span>

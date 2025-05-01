@@ -4,14 +4,14 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class LeaveRequest extends FormRequest
+class LeaveRequestRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -21,8 +21,12 @@ class LeaveRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            //
+         return [
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+            'leave_type' => 'nullable|string|max:255',
+            'reason' => 'nullable|string',
+            'status' => 'required',
         ];
     }
 }

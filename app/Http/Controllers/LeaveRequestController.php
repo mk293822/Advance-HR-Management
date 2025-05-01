@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\HandleCache;
 use App\Enums\ApprovingEnum;
+use App\Http\Requests\LeaveRequestRequest;
 use App\Http\Resources\LeaveRequestResource;
 use App\Models\LeaveRequest;
 use App\Services\LeaveRequestService;
@@ -32,7 +33,7 @@ class LeaveRequestController extends Controller
         ]);
     }
 
-    public function approving(Request $request, string $id)
+    public function update(LeaveRequestRequest $request, string $id)
     {
 
         $this->handleCache->clear([
@@ -44,9 +45,19 @@ class LeaveRequestController extends Controller
             'leave_request_count_dashboard',
         ]);
 
+        $validatedData = $request->validated();
+
+        if ($validatedData['status'] === 'approved') {
+            $validatedData['status'] = ApprovingEnum::APPROVED->value;
+        } elseif ($validatedData['status'] === 'rejected') {
+            $validatedData['status'] = ApprovingEnum::REJECTED->value;
+        } else {
+            $validatedData['status'] = ApprovingEnum::PENDING->value;
+        }
 
         $leaveRequest = LeaveRequest::findOrFail($id);
-        $leaveRequest->update(['status' => $request->get('type') === "approve" ? ApprovingEnum::APPROVED->value : ApprovingEnum::REJECTED->value]);
+
+        $leaveRequest->update($validatedData);
 
         return response()->json([
             'status' => 'success',
