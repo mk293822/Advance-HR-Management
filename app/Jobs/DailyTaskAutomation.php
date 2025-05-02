@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Actions\HandleCache;
 use App\Enums\ApprovingEnum;
 use App\Enums\AttendanceEnum;
 use App\Models\Attendance;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -68,6 +70,8 @@ class DailyTaskAutomation implements ShouldQueue
             }
 
             DB::commit();
+
+            Cache::flush();
         } catch (\Exception $e) {
             DB::rollBack();
             // Log the exception

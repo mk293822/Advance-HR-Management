@@ -2,6 +2,7 @@
 
 namespace App\Actions;
 
+use App\Enums\ApprovingEnum;
 use App\Enums\AttendanceEnum;
 use App\Enums\LeaveTypeEnum;
 use App\Models\Attendance;
@@ -24,10 +25,12 @@ class RecordAttendance
 
             $today = Carbon::today()->timezone('Asia/Yangon')->format('Y-m-d');
 
+            $leaveRequest = null;
+
             if ($attendance->status === AttendanceEnum::LEAVE->value) {
                 $user = User::where('employee_id', $attendance->employee_id)->firstOrFail();
 
-                LeaveRequest::updateOrCreate(
+                $leaveRequest = LeaveRequest::updateOrCreate(
                     ['attendance_id' => $attendance->id],
                     [
                         'user_id' => $user->id,
@@ -35,14 +38,19 @@ class RecordAttendance
                         'end_date' => $today,
                         'employee_id' => $attendance->employee_id,
                         'leave_type' => LeaveTypeEnum::CASUAL->value,
+                        'status' => ApprovingEnum::PENDING->value,
                     ]
                 );
             } else {
-                LeaveRequest::where('attendance_id', $attendance->id)->delete();
+                $leave_Request = LeaveRequest::where('attendance_id', $attendance->id)->first();
+                $leaveRequest = $leave_Request;
+                if ($leave_Request) {
+                    $leave_Request->delete();
+                }
             }
 
             DB::commit();
-            return $attendance;
+            return [$attendance, $leaveRequest];
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

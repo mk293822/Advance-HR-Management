@@ -34,6 +34,8 @@ const DailyTasks = ({
     const [localAttendances, setLocalAttendances] =
         useState<AttendanceType[]>(attendances);
     const [showErrorModal, setShowErrorModal] = useState(false);
+    const [localLeaveRequests, setLocalLeaveRequests] =
+        useState<LeaveRequest[]>(leave_requests);
     const [errorMessage, setErrorMessage] = useState<{
         message: string;
         status: number;
@@ -54,6 +56,34 @@ const DailyTasks = ({
             .put(route("attendances.update", id), { status: status })
             .then((response) => {
                 if (response.data.status === "success") {
+                    if (response.data.data.status === "leave") {
+                        setLocalLeaveRequests((prev) => {
+                            const exists = prev.some(
+                                (leave) =>
+                                    leave.id === response.data.leave_request.id
+                            );
+
+                            if (exists) {
+                                return prev.map((leave) =>
+                                    leave.id === response.data.leave_request.id
+                                        ? response.data.leave_request
+                                        : leave
+                                );
+                            } else {
+                                return [...prev, response.data.leave_request];
+                            }
+                        });
+                    } else {
+                        if (response.data.leave_request) {
+                            setLocalLeaveRequests((pre) =>
+                                pre.filter(
+                                    (leave) =>
+                                        leave.id !==
+                                        response.data.leave_request.id
+                                )
+                            );
+                        }
+                    }
                     setErrorMessage({
                         message: response.data.message,
                         status: 200,
@@ -62,7 +92,9 @@ const DailyTasks = ({
 
                     setLocalAttendances((pre) =>
                         pre.map((att) =>
-                            att.id === id ? { ...att, status: status } : att
+                            att.id === id
+                                ? { ...att, status: response.data.data.status }
+                                : att
                         )
                     );
                 }
@@ -164,8 +196,8 @@ const DailyTasks = ({
                                 <ClipboardDocumentListIcon className="w-6 h-6 text-yellow-400" />
                             </div>
                             <div className="mt-4 space-y-3">
-                                {leave_requests.length > 0 ? (
-                                    leave_requests.map((leave) => (
+                                {localLeaveRequests.length > 0 ? (
+                                    localLeaveRequests.map((leave) => (
                                         <div
                                             key={leave.id}
                                             className="flex justify-between items-center"

@@ -37,7 +37,7 @@ class DailyTaskService
     public function getLeaveRequests($request)
     {
         return $this->handleCache->remember('leave_requests_today', null, function () use ($request) {
-            return LeaveRequestResource::collection(LeaveRequest::where('start_date', $this->today)->get())->toArray($request);
+            return LeaveRequestResource::collection(LeaveRequest::where('start_date', $this->today->format('Y-m-d'))->get())->toArray($request);
         });
     }
 
@@ -51,11 +51,9 @@ class DailyTaskService
                         });
         });
 
-        $birthday_users = $this->handleCache->remember('birthday_users_today', null, function () use ($users, $request) {
+        return $this->handleCache->remember('birthday_users_today', null, function () use ($users, $request) {
             return UserResource::collection($users)->toArray($request);
         });
-
-        return $birthday_users;
     }
 
     public function getUpcomingEvents($request)

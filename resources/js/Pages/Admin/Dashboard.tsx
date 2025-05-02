@@ -233,31 +233,39 @@ export default function Dashboard({
                 {/* Second row: Leave requests + Tasks + Events */}
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
                     {/* Recent Leave Requests */}
-                    <div className="bg-gray-800 rounded-lg shadow p-6 xl:col-span-2">
+                    <div className="bg-gray-800 rounded-lg shadow p-6 xl:col-span-2 min-h-20">
                         <h2 className="text-lg font-semibold mb-4">
                             Recent Leave Requests
                         </h2>
                         <ul className="space-y-3 text-sm text-gray-400">
-                            {leaveRequests.map((req, index) => (
-                                <li
-                                    key={index}
-                                    className="flex justify-between items-center"
-                                >
-                                    <span>{req.employee_name}</span>
-                                    <span>{req.date}</span>
-                                    <span
-                                        className={`px-2 py-1 font-semibold text-white rounded-full text-xs ${
-                                            req.status === "approved"
-                                                ? "bg-green-600"
-                                                : req.status === "rejected"
-                                                ? " bg-red-600"
-                                                : " bg-yellow-600"
-                                        }`}
+                            {leaveRequests.length > 0 ? (
+                                leaveRequests.map((req, index) => (
+                                    <li
+                                        key={index}
+                                        className="flex justify-between items-center"
                                     >
-                                        {req.status}
+                                        <span>{req.employee_name}</span>
+                                        <span>{req.date}</span>
+                                        <span
+                                            className={`px-2 py-1 font-semibold text-white rounded-full text-xs ${
+                                                req.status === "approved"
+                                                    ? "bg-green-600"
+                                                    : req.status === "rejected"
+                                                    ? " bg-red-600"
+                                                    : " bg-yellow-600"
+                                            }`}
+                                        >
+                                            {req.status}
+                                        </span>
+                                    </li>
+                                ))
+                            ) : (
+                                <li className="flex justify-between items-center">
+                                    <span className="w-full text-center">
+                                        No Recent Leave Requests
                                     </span>
                                 </li>
-                            ))}
+                            )}
                         </ul>
                     </div>
 

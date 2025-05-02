@@ -6,6 +6,7 @@ use App\Actions\HandleCache;
 use App\Actions\RecordAttendance;
 use App\Http\Requests\AttendanceRequest;
 use App\Http\Resources\AttendanceResource;
+use App\Http\Resources\LeaveRequestResource;
 use App\Services\AttendanceService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,12 +50,13 @@ class AttendanceController extends Controller
 
         $validatedData = $request->validated();
 
-        $attendance = $recordAttendance->update($id, $validatedData);
+        [$attendance, $leaveRequest] = $recordAttendance->update($id, $validatedData);
 
         return response()->json([
             'status' => 'success',
             'message' => 'Attendance updated successfully',
-            'data' => (new AttendanceResource($attendance))->toArray($request)
+            'data' => (new AttendanceResource($attendance))->toArray($request),
+            'leave_request' => $leaveRequest ? (new LeaveRequestResource($leaveRequest))->toArray($request) : null,
         ], 200);
     }
 
