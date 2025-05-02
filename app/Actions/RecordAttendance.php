@@ -22,7 +22,7 @@ class RecordAttendance
             $attendance = Attendance::findOrFail($id);
             $attendance->update($validatedData);
 
-            $today = Carbon::today()->timezone('Asia/Yangon');
+            $today = Carbon::today()->timezone('Asia/Yangon')->format('Y-m-d');
 
             if ($attendance->status === AttendanceEnum::LEAVE->value) {
                 $user = User::where('employee_id', $attendance->employee_id)->firstOrFail();
