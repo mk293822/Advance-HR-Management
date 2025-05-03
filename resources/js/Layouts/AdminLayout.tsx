@@ -11,7 +11,7 @@ const AdminLayout = ({ children }: PropsWithChildren) => {
                     <div className="px-6 pt-6 min-h-[calc(100vh-9.5rem)]">
                         {children}
                     </div>
-                    <footer className="text-xs py-4 mt-10 border-t border-gray-600 text-gray-600">
+                    <footer className="text-xs py-4 mt-10 border-t border-gray-600 text-gray-500">
                         <div className="container mx-auto px-4 flex flex-col sm:flex-row justify-between items-center">
                             <div>
                                 &copy; {new Date().getFullYear()} HR Management
