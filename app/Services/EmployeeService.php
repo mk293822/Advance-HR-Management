@@ -5,9 +5,16 @@ namespace App\Services;
 use App\Actions\HandleCache;
 use App\Http\Resources\DepartmentResource;
 use App\Http\Resources\UserResource;
+use App\Models\Attendance;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
 class EmployeeService
@@ -60,4 +67,110 @@ class EmployeeService
         });
     }
 
+    // CRUD Operations
+
+    public function createEmployee($request)
+    {
+        $this->handleCache->clear([
+            'all_employees_employee_page' . $request->page,
+            'employee_links_page_' . $request->page,
+            'all_departments_employee',
+            'all_roles_employee',
+            'all_birthday_users',
+            'birthday_users_today',
+            'all_positions_employee',
+            'pending_employees_dashboard'
+        ]);
+
+        $validated = $request->validated();
+
+        $validatedEmail = Validator::make($request->only('email'), [
+            'email'  => 'required|email|unique:users,email|max:255',
+        ])->validate();
+
+        $validated['email'] = $validatedEmail['email'];
+
+        $validated['password'] = bcrypt($validated['password']);
+        $validated['email_verified_at'] = now();
+        $validated['remember_token'] = null;
+        $validated['employee_id'] = 'EMP-' . str_pad(User::count() + 1, 3, '0', STR_PAD_LEFT);
+
+        // Create the employee
+        return User::create($validated);
+    }
+
+    public function updateEmployee($request, $id)
+    {
+        $this->handleCache->clear([
+            'all_employees_employee_page' . $request->page,
+            'employee_links_page_' . $request->page,
+            'all_departments_employee',
+            'all_roles_employee',
+            'all_birthday_users',
+            'birthday_users_today',
+            'all_positions_employee',
+            'pending_employees_dashboard'
+        ]);
+
+        $validated = $request->validated();
+
+        $validatedEmail = Validator::make($request->only('email'), [
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users')->ignore($id),
+            ],
+        ])->validate();
+
+        // Correctly assign the email field from the validated email result
+        $validated['email'] = $validatedEmail['email'];
+
+        // Find the employee by ID
+        $employee = User::findOrFail($id);
+
+
+        if (!Hash::check($validated['password'], $employee->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['The password does not match.'],
+            ]);
+        }
+
+        // Update the employee
+        $employee->update($validated);
+
+        return $employee;
+    }
+
+    public function deleteEmployee($request, $id)
+    {
+        $this->handleCache->clear([
+            'all_employees_employee_page' . $request->page,
+            'employee_links_page_' . $request->page,
+            'all_departments_employee',
+            'all_roles_employee',
+            'all_birthday_users',
+            'birthday_users_today',
+            'all_positions_employee',
+            'pending_employees_dashboard'
+        ]);
+        // Find the employee by ID
+        DB::beginTransaction();
+        try {
+            $employee = User::findOrFail($id);
+
+            Department::where('header_id', $employee->employee_id)->first()->update([
+                'header_id' => null,
+            ]);
+
+            Attendance::where('employee_id', $employee->employee_id)->delete();
+
+            // Delete the employee
+            $employee->delete();
+            DB::commit();
+        } catch (Exceptions $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 }

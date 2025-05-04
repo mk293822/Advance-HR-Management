@@ -33,31 +33,10 @@ class LeaveRequestController extends Controller
         ]);
     }
 
-    public function update(LeaveRequestRequest $request, string $id)
+    public function update(LeaveRequestRequest $request, string $id, LeaveRequestService $service)
     {
 
-        $this->handleCache->clear([
-            'leave_requests',
-            'leave_requests_links',
-            'leave_requests_today',
-            'pending_leave_requests_dashboard',
-            'recent_leave_requests_dashboard',
-            'leave_request_count_dashboard',
-        ]);
-
-        $validatedData = $request->validated();
-
-        if ($validatedData['status'] === 'approved') {
-            $validatedData['status'] = ApprovingEnum::APPROVED->value;
-        } elseif ($validatedData['status'] === 'rejected') {
-            $validatedData['status'] = ApprovingEnum::REJECTED->value;
-        } else {
-            $validatedData['status'] = ApprovingEnum::PENDING->value;
-        }
-
-        $leaveRequest = LeaveRequest::findOrFail($id);
-
-        $leaveRequest->update($validatedData);
+        $leaveRequest = $service->update($request, $id);
 
         return response()->json([
             'status' => 'success',

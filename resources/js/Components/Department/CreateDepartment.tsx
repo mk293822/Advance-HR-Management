@@ -10,6 +10,7 @@ import {
 } from "@headlessui/react";
 import Fuse from "fuse.js";
 import ActionButton from "../ActionButton";
+import axios from "axios";
 
 interface formProps {
     name: string;
@@ -27,12 +28,7 @@ interface Props {
     onClose: () => void;
     onCreate: (data: formProps) => void;
     isEdit: boolean;
-    toeditData: Department | null;
-    users: Array<{
-        employee_id: string;
-        full_name: string;
-    }>;
-    header_ids: string[];
+    department_id: number | null;
 }
 
 export default function CreateDepartment({
@@ -40,10 +36,16 @@ export default function CreateDepartment({
     onClose,
     onCreate,
     isEdit,
-    toeditData,
-    users,
-    header_ids,
+    department_id,
 }: Props) {
+    const [header_ids, setHeaderIds] = useState<string[]>([]);
+    const [users, setUsers] = useState<
+        Array<{
+            full_name: string;
+            employee_id: string;
+        }>
+    >([]);
+
     const initialForm: formProps = {
         name: "",
         header_id: "",
@@ -52,13 +54,6 @@ export default function CreateDepartment({
         participants: [],
     };
 
-    const [editData] = useState<formProps>({
-        name: toeditData?.name ?? "",
-        header_id: toeditData?.header?.employee_id ?? "",
-        description: toeditData?.description ?? "",
-        status: toeditData?.status ?? "",
-        participants: toeditData?.participants ?? [],
-    });
     const [form, setForm] = useState<formProps>(initialForm);
     const [showParticipantModal, setShowParticipantModal] = useState(false);
 
@@ -71,26 +66,28 @@ export default function CreateDepartment({
         form.header_id
     );
 
-    // Head Selecting and searching
     useEffect(() => {
-        if (isEdit && editData) {
-            setForm(editData);
-            setSelectedHead(editData.header_id);
+        if (isEdit && department_id) {
+            axios
+                .get(route("departments.edit", department_id))
+                .then((res) => {
+                    if (res.data.status === "success") {
+                        setForm(res.data.department);
+                        setHeaderIds(res.data.header_ids);
+                        setUsers(res.data.users);
+                        setSelectedHead(res.data.department.header_id);
+                    } else {
+                        setForm(initialForm);
+                        setHeaderIds([]);
+                        setUsers([]);
+                    }
+                })
+                .catch((err) => {});
         }
-    }, [isEdit, editData]);
+    }, [department_id, isEdit]);
 
     const filteredUsers =
         query === "" ? users : fuse.search(query).map((result) => result.item);
-
-    // For Editing
-    useEffect(() => {
-        if (isEdit && editData) {
-            setForm(editData);
-            setSelectedHead(editData.header_id);
-        } else {
-            setForm(initialForm);
-        }
-    }, [isEdit, editData]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -103,6 +100,7 @@ export default function CreateDepartment({
         setForm(initialForm);
         setSelectedHead("");
         onClose();
+        setSelectedHead(null);
     };
 
     return (

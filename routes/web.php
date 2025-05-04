@@ -59,6 +59,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
     Route::apiResource('departments', DepartmentController::class)->only([
         'index',
         'store',
+        'edit',
         'update',
         'destroy'
     ])->names([
@@ -66,6 +67,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
         'store' => 'departments.store',
         'update' => 'departments.update',
         'destroy' => 'departments.destroy',
+        'edit' => 'departments.edit',
     ]);
 
     // Settings Routes

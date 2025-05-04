@@ -66,10 +66,6 @@ export type UpcomingEvent = {
 
 export type DepartmentProps = {
     departments: Department[];
-    users: Array<{
-        employee_id: string;
-        full_name: string;
-    }>;
     header_ids: string[];
 };
 

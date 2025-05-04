@@ -7,13 +7,13 @@ import { Department, DepartmentProps } from "@/types/Admin";
 import { Status } from "@/types/Enums";
 import { Head } from "@inertiajs/react";
 import axios from "axios";
+import clsx from "clsx";
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 
 interface formProps {
     name: string;
     description: string | null;
-    header_id: string;
     status: Status | string; // Use string literal union if status is fixed
     participants: Array<{
         full_name: string;
@@ -21,11 +21,7 @@ interface formProps {
     }>;
 }
 
-export default function DepartmentsPage({
-    departments,
-    users,
-    header_ids,
-}: DepartmentProps) {
+export default function DepartmentsPage({ departments }: DepartmentProps) {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [selectedDepartment, setSelectedDepartment] =
         useState<Department | null>(null);
@@ -42,6 +38,23 @@ export default function DepartmentsPage({
         message: "",
         status: 0,
     });
+
+    const badgeClass = (dept: Department) =>
+        clsx(
+            "inline-block px-3 py-1 text-xs uppercase tracking-wide rounded-full shadow-sm transition duration-300",
+            {
+                "bg-green-600 text-white": dept.status === "Active",
+                "bg-yellow-500 text-white": dept.status === "Inactive",
+                "bg-red-600 text-white": dept.status === "Suspended",
+                "bg-blue-600 text-white": dept.status === "Pending",
+                "bg-gray-500 text-white": ![
+                    "Active",
+                    "Inactive",
+                    "Suspended",
+                    "Pending",
+                ].includes(dept.status),
+            }
+        );
 
     // Search box
     const [searchQuery, setSearchQuery] = useState("");
@@ -226,7 +239,7 @@ export default function DepartmentsPage({
                     <tbody>
                         {filteredDepartments.map((dept, index) => (
                             <tr
-                                key={index}
+                                key={dept.id}
                                 className="border-b border-gray-700 hover:bg-gray-600"
                                 onClick={() => handleDepartmentClick(dept)}
                             >
@@ -252,19 +265,7 @@ export default function DepartmentsPage({
                                     ).toLocaleDateString()}
                                 </td>
                                 <td className="px-2 lg:px-4 py-3">
-                                    <span
-                                        className={`inline-block px-3 py-1 text-xs uppercase tracking-wide rounded-full shadow-sm transition duration-300 ${
-                                            dept.status === "Active"
-                                                ? "bg-green-600 text-white"
-                                                : dept.status === "Inactive"
-                                                ? "bg-yellow-500 text-white"
-                                                : dept.status === "Suspended"
-                                                ? "bg-red-600 text-white"
-                                                : dept.status === "Pending"
-                                                ? "bg-blue-600 text-white"
-                                                : "bg-gray-500 text-white"
-                                        }`}
-                                    >
+                                    <span className={badgeClass(dept)}>
                                         {dept.status}
                                     </span>
                                 </td>
@@ -300,9 +301,7 @@ export default function DepartmentsPage({
                 }}
                 onCreate={handleDepartmentCreate}
                 isEdit={isEdit}
-                toeditData={selectedDepartment}
-                users={users}
-                header_ids={header_ids}
+                department_id={selectedDepartment?.id || null}
             />
 
             {/* Error Modal */}

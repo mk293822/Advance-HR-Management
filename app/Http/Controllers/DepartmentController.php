@@ -32,16 +32,10 @@ class DepartmentController extends Controller
 
         $departments = $service->getDepartments($request);
 
-        $header_ids = $service->getHeaderIds();
-
-        $users = $service->getUsers();
-
         $pagination_links = $service->getPaginationLinks($request);
 
         return Inertia::render("Admin/Department", [
             'departments' => $departments,
-            'users' => $users,
-            'header_ids' => $header_ids,
             'pagination_links' => $pagination_links,
         ]);
     }
@@ -49,52 +43,9 @@ class DepartmentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(DepartmentRequest $request, DepartmentService $service)
     {
-
-        $this->handleCache->clear([
-            'departments_page' . $request->page,
-            'department_links_page_' . $request->page,
-            'users_department',
-            'header_ids_department',
-            'pending_departments_dashboard',
-            'department_count_dashboard',
-            'all_departments_employee',
-        ]);
-
-        DB::beginTransaction();
-        try {
-
-            $validatedData = $request->validated();
-
-            // Checking participants and header are already in a department
-            $header_ids = Department::pluck('header_id')->toArray();
-
-            if (in_array($validatedData['header_id'], $header_ids)) {
-                $validatedData['header_id'] = null;
-            }
-
-            $conflictingParticipants = collect($validatedData['participants'])
-                ->filter(fn($p) => in_array($p['employee_id'], $header_ids));
-
-            if ($conflictingParticipants->isNotEmpty()) {
-                $validatedData['header_id'] = null;
-            }
-
-            $department = Department::create($validatedData);
-
-            collect($validatedData['participants'])->map(function ($participant) use ($department) {
-                User::where("employee_id", $participant['employee_id'])->update([
-                    'department_id' => $department->id
-                ]);
-            });
-
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-             throw $e;
-        }
-
+        $department = $service->create($request);
 
         return response()->json([
             'status' => 'success',
@@ -104,48 +55,30 @@ class DepartmentController extends Controller
     }
 
 
+    public function edit(string $id, DepartmentService $service)
+    {
+        $department = Department::findOrFail($id);
+
+        $users = $service->getUsers();
+
+        $header_ids = $service->getHeaderIds();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Department retrieved successfully',
+            'users' => $users,
+            'department' => $department->editData,
+            'header_ids' => $header_ids,
+        ], 200);
+    }
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(DepartmentRequest $request, string $id, DepartmentService $service)
     {
 
-        $this->handleCache->clear([
-            'departments_page' . $request->page,
-            'department_links_page_' . $request->page,
-            'users_department',
-            'header_ids_department',
-            'pending_departments_dashboard',
-            'department_count_dashboard',
-            'all_departments_employee',
-        ]);
-        // Validate the request data
-        $validatedData = $request->validated();
-
-        // Find the department, or fail if not found
-        $department = Department::findOrFail($id);
-
-         // Update the department (observer will handle the logic for participants and header_id)
-        $department->update($validatedData);
-
-
-        // Handle department header
-        if (isset($validatedData['header_id'])) {
-            // Update the Header of the Department
-            User::where('employee_id', $department->header_id)->update([
-                'department_id' => $department->id
-            ]);
-
-            // Unset the header if it conflicts with another department
-            $unset_header = Department::where('id', '!=', $department->id)
-                ->where('header_id', $department->header_id)
-                ->first();
-
-            if ($unset_header) {
-                $unset_header->header_id = null;
-                $unset_header->save();
-            }
-        }
+        [$department, $unset_header] = $service->update($request, $id);
 
         return response()->json([
             'status' => 'success',
@@ -158,7 +91,7 @@ class DepartmentController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, string $id)
+    public function destroy(DepartmentRequest $request, string $id)
     {
 
         $this->handleCache->clear([

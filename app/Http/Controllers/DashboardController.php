@@ -68,10 +68,6 @@ class DashboardController extends Controller
 
         $event = UpcomingEvents::create($validate);
 
-        if (!$event) {
-            throw new \Exception('Failed to create event.');
-        }
-
         return response()->json([
             'status' => 'success',
             'message' => 'Event created successfully',
