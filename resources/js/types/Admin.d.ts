@@ -117,6 +117,7 @@ export type Employee = {
     phone: string | null;
     gender: string | null;
     employee_id: string;
+    avatar: string;
     department: Department | null; // Nested Department type
     position: PositionProps; // Nested Position type
     role: RoleProps; // Nested Role type

@@ -37,6 +37,7 @@ class EmployeeRequest extends FormRequest
             'date_hired'      => 'required|date|before_or_equal:today',
             'salary'          => 'required|numeric|min:0',
             'status'          => 'required|in:Active,Inactive,Suspended,Pending', // assuming these are the valid statuses
+            'avatar'          => 'nullable|image|mimes:jpeg,png,jpg,gif'
         ];
     }
 }

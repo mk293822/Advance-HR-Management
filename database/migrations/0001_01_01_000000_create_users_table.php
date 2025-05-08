@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('gender')->nullable(); // Male / Female / Other
             $table->date('date_of_birth')->nullable();
             $table->string('address')->nullable();
+            $table->string('avatar')->nullable();
 
             $table->string('employee_id')->unique(); // E.g., EMP-001
             $table->foreignId('department_id')->nullable()->constrained('departments')->onDelete('cascade');

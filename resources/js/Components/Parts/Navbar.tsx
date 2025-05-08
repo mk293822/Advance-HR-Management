@@ -114,7 +114,7 @@ const Navbar = () => {
                         </Dropdown>
 
                         <img
-                            src="https://i.pravatar.cc/40"
+                            src={user.avatar}
                             alt="User Avatar"
                             className="w-9 h-9 rounded-full border border-gray-200 dark:border-gray-600"
                         />

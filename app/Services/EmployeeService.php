@@ -12,10 +12,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
+use illuminate\Support\Str;
 
 class EmployeeService
 {
@@ -88,6 +90,12 @@ class EmployeeService
             'email'  => 'required|email|unique:users,email|max:255',
         ])->validate();
 
+        $directory = 'avatars/' . Str::random(32);
+        Storage::makeDirectory($directory);
+
+        // Generate a fake image and store it in the directory
+        $validated['avatar'] = $validated['avatar']->store($directory, 'public');
+
         $validated['email'] = $validatedEmail['email'];
 
         $validated['password'] = bcrypt($validated['password']);
@@ -113,6 +121,12 @@ class EmployeeService
         ]);
 
         $validated = $request->validated();
+
+        $directory = 'avatars/' . Str::random(32);
+        Storage::makeDirectory($directory);
+
+        // Generate a fake image and store it in the directory
+        $validated['avatar'] = $validated['avatar']->store($directory, 'public');
 
         $validatedEmail = Validator::make($request->only('email'), [
             'email' => [
@@ -158,6 +172,14 @@ class EmployeeService
         DB::beginTransaction();
         try {
             $employee = User::findOrFail($id);
+
+            if ($employee->avatar && Storage::disk('public')->exists($employee->avatar)) {
+                Storage::disk('public')->delete($employee->avatar);
+
+                // Optionally delete the directory if it's specific to this user
+                $directory = dirname($employee->avatar);
+                Storage::disk('public')->deleteDirectory($directory);
+            }
 
             Department::where('header_id', $employee->employee_id)->first()->update([
                 'header_id' => null,

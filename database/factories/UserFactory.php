@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Department;
 use App\Models\Position;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -28,6 +30,14 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+
+        $directory = 'avatars/' . Str::random(32);
+        Storage::makeDirectory($directory);
+
+        // Generate a fake image and store it in the directory
+        $fakeFile = UploadedFile::fake()->image('avatar.png');
+        $path = $fakeFile->store($directory, 'public');
+
         return [
             'name' => fake()->userName(),
             'email' => fake()->unique()->safeEmail(),
@@ -38,6 +48,7 @@ class UserFactory extends Factory
             'gender' => $this->faker->randomElement(['Male', 'Female']),
             'date_of_birth' => $this->faker->date('Y-m-d', '-20 years'),
             'address' => $this->faker->address,
+            'avatar' => $path,
 
             'employee_id' => 'EMP-' . $this->faker->unique()->numerify('###'),
             'position_id' => $this->faker->randomElement(Position::pluck('id')->toArray()),

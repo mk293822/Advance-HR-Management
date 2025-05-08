@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class UserResource extends JsonResource
 {
@@ -23,6 +24,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone' => $this->phone,
             'gender' => $this->gender,
+            'avatar' => Storage::url($this->avatar),
             'employee_id' => $this->employee_id,
             'department' => $this->department_id ? (new DepartmentResource($this->department))->toArray($request) : null,
             'position' => $this->position->toArray(fn($position) => [

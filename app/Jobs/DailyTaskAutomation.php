@@ -36,16 +36,6 @@ class DailyTaskAutomation implements ShouldQueue
     public function handle(): void
     {
         try {
-            // Leave Request Approve Automation
-            $leaveRequests = LeaveRequest::where('end_date', '<', Carbon::today())
-                ->where('status', ApprovingEnum::PENDING->value)
-                ->get();
-
-            foreach ($leaveRequests as $request) {
-                $request->status = ApprovingEnum::REJECTED->value;
-                $request->save();
-            }
-
 
             // Create daily Attendances for all users
             $users = User::all();
@@ -67,6 +57,16 @@ class DailyTaskAutomation implements ShouldQueue
                         'remarks' => null,
                     ]);
                 }
+            }
+
+            // Leave Request Approve Automation
+            $leaveRequests = LeaveRequest::where('end_date', '<', Carbon::today())
+                ->where('status', ApprovingEnum::PENDING->value)
+                ->get();
+
+            foreach ($leaveRequests as $request) {
+                $request->status = ApprovingEnum::REJECTED->value;
+                $request->save();
             }
 
             DB::commit();
