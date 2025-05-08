@@ -90,11 +90,13 @@ class EmployeeService
             'email'  => 'required|email|unique:users,email|max:255',
         ])->validate();
 
-        $directory = 'avatars/' . Str::random(32);
-        Storage::makeDirectory($directory);
+        if ($request->hasFile('avatar')) {
+            $directory = 'avatars/' . Str::random(32);
+            Storage::makeDirectory($directory);
 
-        // Generate a fake image and store it in the directory
-        $validated['avatar'] = $validated['avatar']->store($directory, 'public');
+            // Generate a fake image and store it in the directory
+            $validated['avatar'] = $validated['avatar']->store($directory, 'public');
+        }
 
         $validated['email'] = $validatedEmail['email'];
 
@@ -122,11 +124,14 @@ class EmployeeService
 
         $validated = $request->validated();
 
-        $directory = 'avatars/' . Str::random(32);
-        Storage::makeDirectory($directory);
 
-        // Generate a fake image and store it in the directory
-        $validated['avatar'] = $validated['avatar']->store($directory, 'public');
+        if ($request->hasFile('avatar')) {
+            $directory = 'avatars/' . Str::random(32);
+            Storage::makeDirectory($directory);
+
+            // Generate a fake image and store it in the directory
+            $validated['avatar'] = $validated['avatar']->store($directory, 'public');
+        }
 
         $validatedEmail = Validator::make($request->only('email'), [
             'email' => [

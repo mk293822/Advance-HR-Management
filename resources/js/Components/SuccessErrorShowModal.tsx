@@ -33,7 +33,7 @@ export default function SuccessErrorShowModal({
             <Dialog
                 as="div"
                 id="modal"
-                className="fixed inset-0 z-50 mt-4 max-h-[10vh] flex justify-end items-start px-4"
+                className="fixed z-50 max-w-[70%] right-5 top-5 max-h-[10vh] px-4"
                 onClose={() => {}}
                 static
             >
