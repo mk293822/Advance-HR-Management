@@ -1,18 +1,20 @@
-# Stage 1: Build React App (Frontend)
-FROM node:18 AS react-build
+FROM node:20 AS react-build
 
 WORKDIR /app
 
-COPY ./package.json ./package-lock.json ./
+# Install dependencies
+COPY package*.json ./
 RUN npm install
 
+# Copy config files
 COPY tsconfig.json vite.config.js ./
+
+# Copy source code (including CSS!)
 COPY resources/js resources/js
 COPY resources/css resources/css
 
+# Build React app
 RUN npm run build
-
-
 
 # Copy the rest of the React source code
 
