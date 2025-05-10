@@ -77,7 +77,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->group(function () {
 
 Route::middleware('auth')->prefix('profile')->group(function () {
     Route::get('/', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 

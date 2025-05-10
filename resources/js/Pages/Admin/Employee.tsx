@@ -147,9 +147,7 @@ const index = ({
             <Head title="Employee" />
 
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold text-white">
-                    Leave Requests
-                </h1>
+                <h1 className="text-2xl font-bold text-white">Employees</h1>
 
                 <div className="flex justify-end items-center gap-4 w-[60%]">
                     {/* Search Input */}

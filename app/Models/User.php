@@ -36,6 +36,7 @@ class User extends Authenticatable
         'date_hired',
         'salary',
         'status',
+        'avatar'
     ];
 
     /**

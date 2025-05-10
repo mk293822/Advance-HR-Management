@@ -8,7 +8,25 @@ import UpdateProfileInformationForm from "./Partials/UpdateProfileInformationFor
 export default function Edit({
     mustVerifyEmail,
     status,
-}: PageProps<{ mustVerifyEmail: boolean; status?: string }>) {
+    department,
+    role,
+    position,
+}: PageProps<{
+    mustVerifyEmail: boolean;
+    status?: string;
+    department: Array<{
+        id: number;
+        name: string;
+    }>;
+    role: Array<{
+        id: number;
+        name: string;
+    }>;
+    position: Array<{
+        id: number;
+        name: string;
+    }>;
+}>) {
     return (
         <AuthenticatedLayout
             header={
@@ -25,7 +43,9 @@ export default function Edit({
                         <UpdateProfileInformationForm
                             mustVerifyEmail={mustVerifyEmail}
                             status={status}
-                            className="max-w-xl"
+                            department={department}
+                            role={role}
+                            position={position}
                         />
                     </div>
 
