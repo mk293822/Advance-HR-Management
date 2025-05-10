@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: my-laravel-app
+    env: docker
+    buildCommand: docker build -t laravel-app .
+    startCommand: docker run -p 8080:80 laravel-app
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_KEY
+        value: your-app-key
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: DB_DATABASE
+        value: /var/www/html/database/database.sqlite

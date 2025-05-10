@@ -1,0 +1,22 @@
+version: "3.7"
+services:
+  app:
+    build: .
+    container_name: laravel-app
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www
+    networks:
+      - laravel-network
+  db:
+    image: nouchka/sqlite
+    container_name: sqlite-db
+    volumes:
+      - ./database:/var/www/database
+    networks:
+      - laravel-network
+
+networks:
+  laravel-network:
+    driver: bridge
