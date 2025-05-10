@@ -7,8 +7,7 @@ COPY ./package.json ./package-lock.json ./
 RUN npm install
 
 # Include TypeScript, Vite config, and all source files
-COPY ./tsconfig.json ./vite.config.ts ./resources/js ./
-COPY ./resources/js ./
+COPY ./tsconfig.json ./vite.config.js ./resources/js ./
 
 RUN npm run build
 
