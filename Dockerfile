@@ -19,34 +19,38 @@ RUN npm run build
 # Stage 2: Build Laravel App (Backend)
 FROM php:8.3-fpm
 
-# Install necessary dependencies for PHP and Laravel
+# Stage 2: Build Laravel App (Backend)
+FROM php:8.3-fpm
+
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
-    php-cli \
-    php-fpm \
-    php-mbstring \
-    php-xml \
-    php-bcmath \
     curl \
     unzip \
-    git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    git \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    zip \
+    && docker-php-ext-install mbstring xml bcmath
 
-# Set working directory for Laravel
+# Set working directory
 WORKDIR /var/www
 
 # Copy Laravel project files
 COPY ./ /var/www/
 
-# Install Laravel dependencies using Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
-    composer install --no-dev --optimize-autoloader
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php && \
+    mv composer.phar /usr/local/bin/composer
 
-# Copy the React build folder into the public folder of Laravel
+# Install Laravel dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Copy React build into Laravel public folder
 COPY --from=react-build /app/dist /var/www/public/
 
 # Expose PHP-FPM port
 EXPOSE 9000
 
-# Start PHP-FPM server
+# Start PHP-FPM
 CMD ["php-fpm"]
