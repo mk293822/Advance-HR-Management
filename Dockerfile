@@ -17,7 +17,7 @@ COPY ./resources/js ./
 RUN npm run build
 
 # Stage 2: Build Laravel App (Backend)
-FROM php:8.0-fpm
+FROM php:8.2-cli
 
 # Install necessary dependencies for PHP and Laravel
 RUN apt-get update && apt-get install -y \
