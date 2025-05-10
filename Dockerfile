@@ -1,23 +1,21 @@
 # Stage 1: Build React App (Frontend)
 FROM node:18 AS react-build
 
-# Set working directory for React
 WORKDIR /app
 
-# Copy React project files
 COPY ./package.json ./package-lock.json ./
-
-# Install React dependencies
 RUN npm install
 
-# Copy the rest of the React source code
+# Include TypeScript, Vite config, and all source files
+COPY ./tsconfig.json ./vite.config.ts ./resources/js ./
 COPY ./resources/js ./
 
-# Build the React app for production
 RUN npm run build
 
-# Stage 2: Build Laravel App (Backend)
-FROM php:8.3-fpm
+
+
+# Copy the rest of the React source code
+
 
 # Stage 2: Build Laravel App (Backend)
 FROM php:8.3-fpm
