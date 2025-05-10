@@ -65,9 +65,13 @@ const Navbar = () => {
                         ) : (
                             <Link
                                 href="/"
-                                className="text-xl font-semibold text-gray-900 dark:text-white ml-2"
+                                className="inline-flex items-center px-4 py-2 text-3xl font-semibold text-gray-900 dark:text-gray-200 border-gray-900 rounded-full ml-2"
+                                style={{
+                                    fontFamily:
+                                        '"Playwrite DK Loopet", sans-serif',
+                                }}
                             >
-                                HR Management
+                                MK Core
                             </Link>
                         )}
                     </div>
@@ -114,7 +118,11 @@ const Navbar = () => {
                         </Dropdown>
 
                         <img
-                            src={user.avatar}
+                            src={
+                                typeof user.avatar === "string"
+                                    ? user.avatar
+                                    : ""
+                            }
                             alt="User Avatar"
                             className="w-9 h-9 rounded-full border border-gray-200 dark:border-gray-600"
                         />

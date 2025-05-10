@@ -3,7 +3,6 @@ import TextInput from "../TextInput";
 import InputError from "../InputError";
 import { Textarea } from "@headlessui/react";
 import { Gender, Status } from "@/types/Enums";
-import { usePage } from "@inertiajs/react";
 import React, { useState } from "react";
 
 interface Inputs {
@@ -29,16 +28,15 @@ interface Inputs {
 
 const UpdateProfileInputs = ({
     data,
-    onValueChange = (e)=>{},
+    onValueChange = (e) => {},
     errors,
     htmlFor,
     value,
     type = "text",
     departments,
     roles,
-    positions
+    positions,
 }: Inputs) => {
-
     const [selectData, setSelectData] = useState(data);
 
     const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -47,7 +45,7 @@ const UpdateProfileInputs = ({
         if (typeof onValueChange === "function") {
             onValueChange(e);
         }
-    }
+    };
 
     if (type === "select") {
         return (
@@ -59,7 +57,7 @@ const UpdateProfileInputs = ({
                     id={htmlFor}
                     onChange={handleSelectChange}
                     required
-                    className="w-full px-4 py-2 rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 capitalize rounded-md bg-gray-700 border border-gray-600 text-white focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="">Select {value}</option>
                     {htmlFor === "status" &&
@@ -96,7 +94,7 @@ const UpdateProfileInputs = ({
                 <InputError className="mt-2" message={errors.name} />
             </div>
         );
-    } else if (type === 'textarea') {
+    } else if (type === "textarea") {
         return (
             <div className="w-[100%] col-span-2">
                 <InputLabel htmlFor={htmlFor} value={value} />
@@ -124,14 +122,12 @@ const UpdateProfileInputs = ({
                     isFocused
                     type={type}
                     autoComplete={htmlFor}
-                    readOnly={htmlFor === 'employee_id'}
+                    readOnly={htmlFor === "employee_id"}
                 />
                 <InputError className="mt-2" message={errors.name} />
             </div>
         );
-
     }
-
 };
 
 export default UpdateProfileInputs;

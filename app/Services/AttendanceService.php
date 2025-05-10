@@ -25,7 +25,7 @@ class AttendanceService
 
     public function getPaginationLinks($request)
     {
-        return $this->handleCache->remember('attendance_links_page_' . $request->page, null, function () use ($request) {
+        return $this->handleCache->remember('attendance_links_page_' . $request->page, null, function () {
             return Attendance::orderByDesc('date')->paginate(100)->linkCollection();
         });
     }

@@ -76,7 +76,7 @@ export default function UpdateProfileInformation({
     };
 
     const formFields = [
-        { label: "Name", name: "name", type: "text", value: data.name },
+        { label: "Username", name: "name", type: "text", value: data.name },
         { label: "Email", name: "email", type: "email", value: data.email },
         {
             label: "First Name",
