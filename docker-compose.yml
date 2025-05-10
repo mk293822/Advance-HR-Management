@@ -1,19 +1,22 @@
 version: "3.7"
+
 services:
   app:
     build: .
     container_name: laravel-app
+    networks:
+      - laravel-network
+
+  nginx:
+    image: nginx:stable
+    container_name: nginx-server
     ports:
       - "8080:80"
     volumes:
       - .:/var/www
-    networks:
-      - laravel-network
-  db:
-    image: nouchka/sqlite
-    container_name: sqlite-db
-    volumes:
-      - ./database:/var/www/database
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app
     networks:
       - laravel-network
 

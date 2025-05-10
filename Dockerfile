@@ -33,6 +33,10 @@ RUN apt-get update && apt-get install -y \
     zip \
     && docker-php-ext-install mbstring xml bcmath
 
+RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libfreetype6-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd
+
 # Set working directory
 WORKDIR /var/www
 
@@ -48,6 +52,9 @@ RUN composer install --no-dev --optimize-autoloader
 
 # Copy React build into Laravel public folder
 COPY --from=react-build /app/dist /var/www/public/
+
+# After copying files
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
 # Expose PHP-FPM port
 EXPOSE 9000
