@@ -22,15 +22,15 @@ FROM php:8.0-fpm
 # Install necessary dependencies for PHP and Laravel
 RUN apt-get update && apt-get install -y \
     php-cli \
+    php-fpm \
     php-mbstring \
     php-xml \
     php-bcmath \
     curl \
     unzip \
-    git
-
-# Install Composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Set working directory for Laravel
 WORKDIR /var/www
@@ -39,7 +39,8 @@ WORKDIR /var/www
 COPY ./ /var/www/
 
 # Install Laravel dependencies using Composer
-RUN composer install --no-dev --optimize-autoloader
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer && \
+    composer install --no-dev --optimize-autoloader
 
 # Copy the React build folder into the public folder of Laravel
 COPY --from=react-build /app/dist /var/www/public/
