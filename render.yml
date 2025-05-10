@@ -1,15 +1,16 @@
 services:
   - type: web
-    name: my-laravel-app
+    name: laravel-backend
     env: docker
-    buildCommand: docker build -t laravel-app .
-    startCommand: docker run -p 8080:80 laravel-app
+    buildCommand: docker build -t laravel-react-app .
+    startCommand: docker run -p 8080:80 laravel-react-app
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_KEY
-        value: your-app-key
+        value: base64:w5rUax4+eXjEE4DVRtdooJT/7sIvm7vlynh5N+GzOHo=
       - key: DB_CONNECTION
         value: sqlite
       - key: DB_DATABASE
         value: /var/www/html/database/database.sqlite
+

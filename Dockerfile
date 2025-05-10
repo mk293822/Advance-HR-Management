@@ -1,7 +1,25 @@
-# Use PHP base image
+# Stage 1: Build React App (Frontend)
+FROM node:18 AS react-build
+
+# Set working directory for React
+WORKDIR /app
+
+# Copy React project files
+COPY ./package.json ./package-lock.json ./
+
+# Install React dependencies
+RUN npm install
+
+# Copy the rest of the React source code
+COPY ./resources/js ./
+
+# Build the React app for production
+RUN npm run build
+
+# Stage 2: Build Laravel App (Backend)
 FROM php:8.0-fpm
 
-# Install dependencies
+# Install necessary dependencies for PHP and Laravel
 RUN apt-get update && apt-get install -y \
     php-cli \
     php-mbstring \
@@ -14,16 +32,19 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Set working directory
+# Set working directory for Laravel
 WORKDIR /var/www
 
-# Copy the application files
-COPY . .
+# Copy Laravel project files
+COPY ./ /var/www/
 
-# Install PHP dependencies using Composer
+# Install Laravel dependencies using Composer
 RUN composer install --no-dev --optimize-autoloader
 
-# Expose the PHP-FPM port
+# Copy the React build folder into the public folder of Laravel
+COPY --from=react-build /app/dist /var/www/public/
+
+# Expose PHP-FPM port
 EXPOSE 9000
 
 # Start PHP-FPM server
