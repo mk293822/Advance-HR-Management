@@ -10,8 +10,6 @@ COPY tsconfig.json vite.config.js ./
 COPY resources/js resources/js
 COPY resources/css resources/css
 
-
-
 RUN npm run build
 
 
